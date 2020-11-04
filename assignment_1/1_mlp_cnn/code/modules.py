@@ -116,13 +116,12 @@ class SoftMaxModule(object):
         """
 
         # Tiled version of input
-        x_tiled = np.tile(x, (1, x.shape[1], 1))
-        x_max = x_tiled.max(2)
-        x_tiled = x_tiled - x_max
-        softmax_sums = np.exp(x_tiled).sum(2) #type: ignore
-
-        out = (np.exp(x - x_max)) / softmax_sums #type: ignore
-
+        x_max = x.max(1)
+        x_max_tricked = x - np.tile(x_max, (x.shape[1], 1)).T
+        x_totals = np.exp(x_max_tricked).sum(1)
+        x_probs = np.exp(x_max_tricked) / np.tile(x_totals, (x.shape[1], 1)).T
+        
+        out = x_probs
         return out
 
     def backward(self, dout):

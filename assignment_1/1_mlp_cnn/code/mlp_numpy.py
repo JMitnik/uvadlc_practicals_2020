@@ -76,7 +76,7 @@ class MLP(object):
           X = hidden_weights.forward(X)
           X = self.elu.forward(X)
         
-        out = self.hidden2out.forward(X)
+        X = self.hidden2out.forward(X)
         out = self.softmax.forward(X)
 
         return out
