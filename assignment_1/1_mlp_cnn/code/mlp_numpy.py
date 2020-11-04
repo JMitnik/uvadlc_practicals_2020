@@ -37,23 +37,24 @@ class MLP(object):
         """
 
         # TEST: asdasd
-        self.hidden_layers = self._init_hidden(n_inputs, n_hidden, n_classes)
+        self.hidden_layers = self._init_hidden(n_inputs, n_hidden)
+
+        last_dim: int = n_inputs if len(self.hidden_layers) == 0 else self.hidden_layers[-1].params['weights'].shape[1]
+        self.hidden2out = LinearModule(last_dim, n_classes)
 
         # Activations
         self.elu = ELUModule()
         self.softmax = SoftMaxModule()
 
-    def _init_hidden(self, input_dim: int, n_hidden: List[int], n_labels: int) -> List[LinearModule]:
+    def _init_hidden(self, input_dim: int, n_hidden: List[int]) -> List[LinearModule]:
         """Initializes a list of tuples: each tuple contains weights and gradients"""
         hidden_layers: List[LinearModule] = []
 
         for hidden_dim in n_hidden:
             # Input size is either the input_dim, or the previous layer's input size
-            in_size: int = input_dim if len(hidden_layers) == 0 else hidden_layers[-1].params['weights'].shape[0]
+            in_size: int = input_dim if len(hidden_layers) == 0 else hidden_layers[-1].params['weights'].shape[1]
             hidden_module = LinearModule(in_size, hidden_dim)
             hidden_layers.append(hidden_module)                      
-
-        hidden_layers.append(LinearModule(input_dim, n_labels))
 
         return hidden_layers
 
@@ -67,14 +68,15 @@ class MLP(object):
           x: input to the network
         Returns:
           out: outputs of the network
-
-        TODO: Implement forward pass of the network.
         """
+        # For consistency, let's treat `x` let the matrix it probably is `X`
+        X = x 
 
         for hidden_weights in self.hidden_layers:
           X = hidden_weights.forward(X)
           X = self.elu.forward(X)
         
+        out = self.hidden2out.forward(X)
         out = self.softmax.forward(X)
 
         return out

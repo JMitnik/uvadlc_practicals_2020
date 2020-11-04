@@ -87,15 +87,18 @@ def train():
     train_dataset: DataSet = data_sets['train']
     test_dataset: DataSet = data_sets['test']
     in_size = train_dataset.images[0].flatten().shape[0]
+    nr_labels = train_dataset.labels[0].shape[0]
 
-    mlp = MLP(in_size, dnn_hidden_units, train_dataset.labels)
+    mlp = MLP(in_size, dnn_hidden_units, nr_labels)
     loss_module = CrossEntropyModule()
     
     # Training loop
     for epoch in range(nr_epochs):
         X, y = train_dataset.next_batch(batch_size)
+        # Reshape to correspond to single-vector
+        X = X.reshape(batch_size, -1)
+        
         preds = mlp.forward(X)
-
         loss = loss_module.forward(preds, y)
         grad_loss = loss_module.backward(preds, y)
 

@@ -30,7 +30,7 @@ class LinearModule(object):
 
         # TEST
         self.params = {
-          'weight': np.random.standard_normal((in_features, out_features)), # type: ignore
+          'weights': np.random.standard_normal((in_features, out_features)), # type: ignore
           'bias': np.zeros(out_features)
         }
 
@@ -169,8 +169,9 @@ class CrossEntropyModule(object):
         """
 
         # TEST
-        pred_target_probs = -np.log(x[np.arange(len(y)), y]) # type: ignore
-        out = pred_target_probs.mean()
+        elementwise_prod = - np.log(x) * y # type: ignore
+        batch_out: np.array = elementwise_prod.sum(1) #TEST
+        out = batch_out.mean(0)
         
         return out
     
@@ -219,9 +220,8 @@ class ELUModule(object):
 
         Hint: You can store intermediate variables inside the object. They can be used in backward pass computation.
         """
-        idxs = np.where(x > 0)
+        idxs = np.where(x < 0)
 
-        # TEST
         x[idxs] = np.exp(x[idxs]) - 1 # type: ignore
         
         out = x
