@@ -9,6 +9,7 @@ from __future__ import print_function
 import argparse
 import numpy as np
 import os
+from cifar10_utils import DataSet
 from mlp_numpy import MLP
 from modules import CrossEntropyModule
 import cifar10_utils
@@ -41,7 +42,7 @@ def accuracy(predictions, targets):
                 i.e. the average correct predictions over the whole batch
 
     TODO:
-    Implement accuracy computation.
+        Implement accuracy computation.
     """
 
     ########################
@@ -65,23 +66,50 @@ def train():
 
     ### DO NOT CHANGE SEEDS!
     # Set the random seeds for reproducibility
-    np.random.seed(42)
+    np.random.seed(42) # type: ignore
 
     ## Prepare all functions
     # Get number of units in each hidden layer specified in the string such as 100,100
-    if FLAGS.dnn_hidden_units:
-        dnn_hidden_units = FLAGS.dnn_hidden_units.split(",")
+    if FLAGS.dnn_hidden_units: #type: ignore
+        dnn_hidden_units = FLAGS.dnn_hidden_units.split(",") #type: ignore
         dnn_hidden_units = [int(dnn_hidden_unit_) for dnn_hidden_unit_ in dnn_hidden_units]
     else:
         dnn_hidden_units = []
 
-    ########################
-    # PUT YOUR CODE HERE  #
-    #######################
-    raise NotImplementedError
-    ########################
-    # END OF YOUR CODE    #
-    #######################
+    path_to_data = FLAGS.data_dir #type: ignore
+     # TODO: Maybe can be better?
+    validation_size = 2000
+    data_sets = cifar10_utils.read_data_sets(path_to_data, True, validation_size)
+
+    batch_size = FLAGS.batch_size #type: ignore
+    nr_epochs = FLAGS.max_steps #type: ignore
+
+    train_dataset: DataSet = data_sets['train']
+    test_dataset: DataSet = data_sets['test']
+    in_size = train_dataset.images[0].flatten().shape[0]
+
+    mlp = MLP(in_size, dnn_hidden_units, train_dataset.labels)
+    loss_module = CrossEntropyModule()
+    
+    # Training loop
+    for epoch in range(nr_epochs):
+        X, y = train_dataset.next_batch(batch_size)
+        preds = mlp.forward(X)
+
+        loss = loss_module.forward(preds, y)
+        grad_loss = loss_module.backward(preds, y)
+
+        mlp.backward(grad_loss)
+
+        if epoch % FLAGS.eval_freq == 0: #type: ignore
+            pass
+            # TODO: Get all/per-batch testing
+            # X, _ = test_dataset.next_batch()
+            # MLP.forward(test_dataset)
+            # acc = accuracy()
+            # print()
+
+    
 
 
 def print_flags():

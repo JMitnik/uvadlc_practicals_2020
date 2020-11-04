@@ -1,0 +1,4 @@
+*.pyc
+data_batch_*
+test_batch*
+batches*
