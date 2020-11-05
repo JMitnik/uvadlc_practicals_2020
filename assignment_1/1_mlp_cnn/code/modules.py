@@ -18,10 +18,6 @@ class LinearModule(object):
           in_features: size of each input sample
           out_features: size of each output sample
     
-        TODO:
-        Initialize weights self.params['weight'] using normal distribution with mean = 0 and
-        std = 0.0001. Initialize biases self.params['bias'] with 0.
-    
         Also, initialize gradients with zeros.
         """
 
@@ -40,6 +36,7 @@ class LinearModule(object):
           'bias': np.zeros(out_features)
         }
 
+        self.intermediary_activations_input = None
         self.intermediary_activations = None
     
     def forward(self, x):
@@ -50,23 +47,20 @@ class LinearModule(object):
           x: input to the module
         Returns:
           out: output of the module
-    
-        TODO:
-        Implement forward pass of the module.
-    
-        Hint: You can store intermediate variables inside the object. They can be used in backward pass computation.
-        """
         
         # TEST
+        
+        """
+        self.intermediate_inputs = x
         out = x @ self.params['weights']
-        self.intermediary_activations = out
+        self.intermediate_activations = out
         
         return out
 
     def zero_grad(self):
         """Clears out gradient (and intermediate activations)"""
         self.gradients = np.zeros((self.in_features, self.out_features))
-        self.intermediary_activations = None
+        self.intermediate_inputs = None
   
     def backward(self, dout):
         """
@@ -77,28 +71,21 @@ class LinearModule(object):
         Returns:
           dx: gradients with respect to the input of the module
     
-        TODO:
-        Implement backward pass of the module. Store gradient of the loss with respect to
-        layer parameters in self.grads['weight'] and self.grads['bias'].
+        # TEST
         """
-        
-        ########################
-        # PUT YOUR CODE HERE  #
-        #######################
-
-        raise NotImplementedError
-        
-        ########################
-        # END OF YOUR CODE    #
-        #######################
+        self.grads['weights'] = dout @ self.intermediate_inputs
+        self.grads['bias'] = dout
+        grad_X = dout @ self.params['weights']
+        dx = dout @ grad_X
         return dx
-
-
 
 class SoftMaxModule(object):
     """
     Softmax activation module.
     """
+
+    def __init__(self) -> None:
+      self.intermediary_activations = None
     
     def forward(self, x) -> np.array:
         """
@@ -107,21 +94,16 @@ class SoftMaxModule(object):
           x: input to the module
         Returns:
           out: output of the module
-    
-        TODO:
-        Implement forward pass of the module.
-        To stabilize computation you should use the so-called Max Trick - https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/
-    
-        Hint: You can store intermediate variables inside the object. They can be used in backward pass computation.
         """
 
         # Tiled version of input
         x_max = x.max(1)
         x_max_tricked = x - np.tile(x_max, (x.shape[1], 1)).T
-        x_totals = np.exp(x_max_tricked).sum(1)
-        x_probs = np.exp(x_max_tricked) / np.tile(x_totals, (x.shape[1], 1)).T
+        x_totals = np.exp(x_max_tricked).sum(1) # type: ignore
+        x_probs = np.exp(x_max_tricked) / np.tile(x_totals, (x.shape[1], 1)).T # type: ignore
         
         out = x_probs
+        self.intermediary_activations = out
         return out
 
     def backward(self, dout):
@@ -132,20 +114,17 @@ class SoftMaxModule(object):
         Returns:
           dx: gradients with respect to the input of the module
     
-        TODO:
-        Implement backward pass of the module.
+        # TEST
         """
-        
-        ########################
-        # PUT YOUR CODE HERE  #
-        #######################
+        # Get activations from forward pass
+        s = self.intermediary_activations
+        batch_identity = np.dstack([np.identity(s.shape[0])] * 3).resize(s.shape[0], s.shape[1], s.shape[1])
+        s_tiled = np.tile(s, (s.shape[1], 1, 1)).reshape(s.shape[s], s.shape[1], s.shape[1])
+        applied_s = batch_identity - s_tiled
 
-        raise NotImplementedError
-        
-        ########################
-        # END OF YOUR CODE    #
-        #######################
-        
+        grad_s = s @ applied_s
+
+        dx = dout @ grad_s
         return dx
 
 
@@ -183,20 +162,10 @@ class CrossEntropyModule(object):
         Returns:
           dx: gradient of the loss with the respect to the input x.
     
-        TODO:
         Implement backward pass of the module.
+        # TEST
         """
-        
-        ########################
-        # PUT YOUR CODE HERE  #
-        #######################
-
-        raise NotImplementedError
-        
-        ########################
-        # END OF YOUR CODE    #
-        #######################
-        
+        dx= -y * 1 / x
         return dx
 
 
@@ -204,6 +173,10 @@ class ELUModule(object):
     """
     ELU activation module.
     """
+
+    def __init__(self) -> None:
+      self.intermediary_activations_input = None
+      self.intermediary_activations = None
     
     def forward(self, x: np.array):
         """
@@ -214,16 +187,17 @@ class ELUModule(object):
         Returns:
           out: output of the module
 
-        TODO:
-        Implement forward pass of the module.
-
-        Hint: You can store intermediate variables inside the object. They can be used in backward pass computation.
+        # TEST
         """
+        self.intermediary_activations_input = x
+
         idxs = np.where(x < 0)
 
         x[idxs] = np.exp(x[idxs]) - 1 # type: ignore
         
         out = x
+
+        self.intermediary_activations = out
 
         return out
     
@@ -235,8 +209,12 @@ class ELUModule(object):
         Returns:
           dx: gradients with respect to the input of the module
 
-        TODO:
-        Implement backward pass of the module.
+        # TEST
         """
-        dx = None
+        idxs = np.where(self.intermediary_activations_input < 0)
+
+        x = np.ones_like(self.intermediary_activations_input)
+        x[idxs] = np.exp(x[idxs]) # type: ignore
+
+        dx = dout * x
         return dx
