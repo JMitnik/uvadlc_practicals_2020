@@ -189,14 +189,14 @@ class ELUModule(object):
 
         # TEST
         """
-        self.intermediary_activations_input = x
+        inp = x.copy()
+        self.intermediary_activations_input = x.copy()
 
         idxs = np.where(x < 0)
 
-        x[idxs] = np.exp(x[idxs]) - 1 # type: ignore
+        out = inp
+        out[idxs] = np.exp(inp[idxs]) - 1 # type: ignore
         
-        out = x
-
         self.intermediary_activations = out
 
         return out
@@ -214,7 +214,7 @@ class ELUModule(object):
         idxs = np.where(self.intermediary_activations_input < 0)
 
         x = np.ones_like(self.intermediary_activations_input)
-        x[idxs] = np.exp(x[idxs]) # type: ignore
+        x[idxs] = np.exp(self.intermediary_activations_input[idxs]) # type: ignore
 
         dx = dout * x
         return dx

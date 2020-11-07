@@ -27,9 +27,12 @@ def eval_numerical_gradient(f, x, verbose=True, h=0.00001):
 def eval_numerical_gradient_array(f, x, df, h=1e-5):
     grad = np.zeros_like(x)
     it = np.nditer(x, flags=['multi_index'], op_flags=['readwrite'])
+
+    # For each "cell", we calculate the gradient using difference
     while not it.finished:
         ix = it.multi_index
         
+        # Add positive and negative to input, and calculate thier activations
         oldval = x[ix]
         x[ix] = oldval + h
         pos = f(x).copy()
@@ -37,6 +40,7 @@ def eval_numerical_gradient_array(f, x, df, h=1e-5):
         neg = f(x).copy()
         x[ix] = oldval
         
+        # Gradient is average difference between activations * gradients wrt loss
         grad[ix] = np.sum((pos - neg) * df) / (2 * h)
         it.iternext()
     return grad

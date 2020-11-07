@@ -158,11 +158,13 @@ class TestLayers(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestLosses)
-    unittest.TextTestRunner(verbosity=2).run(suite)
+    # TODO: Enable losses
+    # suite = unittest.TestLoader().loadTestsFromTestCase(TestLosses)
+    # unittest.TextTestRunner(verbosity=2).run(suite)
     
     suite = unittest.TestLoader().loadTestsFromTestCase(TestLayers)
     unittest.TextTestRunner(verbosity=2).run(suite)
-    
-    suite = unittest.TestLoader().loadTestsFromTestCase(TestLayerNorm)
-    unittest.TextTestRunner(verbosity=3).run(suite)
+
+    # TODO: Enable layer norm
+    # suite = unittest.TestLoader().loadTestsFromTestCase(TestLayerNorm)
+    # unittest.TextTestRunner(verbosity=3).run(suite)
