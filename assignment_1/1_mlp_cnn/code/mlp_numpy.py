@@ -109,4 +109,4 @@ class MLP(object):
 
           layer.test = ''
           self.hidden_layers[idx].params['bias'] = bias - lr * grad_bias
-          self.hidden_layers[idx].params['weights'] = bias - lr * grad_bias
+          self.hidden_layers[idx].params['weights'] = weights - lr * grad_weights
