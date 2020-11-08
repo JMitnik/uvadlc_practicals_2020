@@ -162,7 +162,7 @@ class SoftMaxModule(object):
         Returns:
           dx: gradients with respect to the input of the module
     
-        # TEST
+        # TODO: Convert / understand the einsum
         """
         s = self.intermediary_activations
         # First we create for each example feature vector, it's outer product with itself
@@ -218,7 +218,7 @@ class CrossEntropyModule(object):
     
         Implement backward pass of the module.
         """
-        dx= -y * 1 / x
+        dx= -y / (x * x.shape[0])
         return dx
 
 
