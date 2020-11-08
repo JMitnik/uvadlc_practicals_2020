@@ -65,6 +65,8 @@ def train():
     # Set the random seeds for reproducibility
     np.random.seed(42) # type: ignore
 
+    lr = FLAGS.learning_rate
+
     ## Prepare all functions
     # Get number of units in each hidden layer specified in the string such as 100,100
     if FLAGS.dnn_hidden_units: #type: ignore
@@ -100,6 +102,9 @@ def train():
         grad_loss = loss_module.backward(preds, y)
 
         mlp.backward(grad_loss)
+
+        # Perform gradient-descent
+        mlp.sgd(lr)
 
         if epoch % FLAGS.eval_freq == 0: #type: ignore
             pass

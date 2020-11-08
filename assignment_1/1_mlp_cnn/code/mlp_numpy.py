@@ -57,7 +57,6 @@ class MLP(object):
 
         return hidden_layers
 
-
     def forward(self, x):
         """
         Performs forward pass of the input. Here an input tensor x is transformed through
@@ -97,3 +96,17 @@ class MLP(object):
           dout = hidden_layer.backward(dout)
         
         return dout
+
+    def sgd(self, lr: float):
+      """Performs stochastic gradient descent with lr"""
+      # TEST
+      for idx, layer in enumerate(self.hidden_layers):
+        if isinstance(layer, LinearModule):
+          bias = layer.params['bias']
+          weights = layer.params['weights']
+          grad_weights = layer.grads['weights'] 
+          grad_bias = layer.grads['bias'] 
+
+          layer.test = ''
+          self.hidden_layers[idx].params['bias'] = bias - lr * grad_bias
+          self.hidden_layers[idx].params['weights'] = bias - lr * grad_bias

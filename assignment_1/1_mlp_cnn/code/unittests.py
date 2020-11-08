@@ -113,9 +113,9 @@ class TestLayers(unittest.TestCase):
             
             out = layer.forward(x)
             dx = layer.backward(dout)
-            dw = layer.grads['weight']
+            dw = layer.grads['weights']
             dx_num = eval_numerical_gradient_array(lambda xx: layer.forward(xx), x, dout)
-            dw_num = eval_numerical_gradient_array(lambda w: layer.forward(x), layer.params['weight'], dout)
+            dw_num = eval_numerical_gradient_array(lambda w: layer.forward(x), layer.params['weights'], dout)
             
             self.assertLess(rel_error(dx, dx_num), rel_error_max)
             self.assertLess(rel_error(dw, dw_num), rel_error_max)
