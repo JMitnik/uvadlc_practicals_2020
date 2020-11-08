@@ -8,7 +8,7 @@
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "program": "unittests.py",
+            "program": "train_mlp_numpy.py",
             "console": "integratedTerminal"
         }
     ]

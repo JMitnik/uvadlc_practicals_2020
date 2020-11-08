@@ -76,6 +76,8 @@ class MLP(object):
         X = self.to_out.forward(X)
         out = self.softmax.forward(X)
 
+        out = out + 1e-8
+
         return out
 
     def backward(self, dout):

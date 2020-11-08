@@ -158,7 +158,6 @@ class TestLayers(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    # TODO: Enable losses
     suite = unittest.TestLoader().loadTestsFromTestCase(TestLosses)
     unittest.TextTestRunner(verbosity=2).run(suite)
     

@@ -24,13 +24,11 @@ class LinearModule(object):
         self.in_features = in_features
         self.out_features = out_features
 
-        # TEST
         self.params = {
           'weights': np.random.standard_normal((in_features, out_features)), # type: ignore
           'bias': np.zeros(out_features)
         }
 
-        # TEST
         self.grads = {
           'weights': np.zeros((out_features, in_features)),
           'bias': np.zeros(out_features)
@@ -50,8 +48,6 @@ class LinearModule(object):
           x: input to the module
         Returns:
           out: output of the module
-        
-        # TEST
         
         """
         self.intermediate_inputs = x.copy()
@@ -73,11 +69,9 @@ class LinearModule(object):
           dout: gradients of the previous module
         Returns:
           dx: gradients with respect to the input of the module
-    
-        # TEST
         """
         self.grads['weights'] = (dout.T @ self.intermediate_inputs).T
-        self.grads['bias'] = dout @ np.ones(dout.shape[1])
+        self.grads['bias'] = dout.T @ np.ones(dout.shape[0])
         grad_X = dout @ self.params['weights'].T
         dx = grad_X
         return dx
@@ -116,8 +110,6 @@ class SoftMaxModule(object):
           dout: gradients of the previous modul
         Returns:
           dx: gradients with respect to the input of the module
-    
-        # TEST
         """
         dldysm = np.transpose(np.array([np.sum(np.multiply(dout, self.intermediary_activations), axis=1)]))
         Z = np.tile(dldysm, self.intermediary_activations.shape[1])
@@ -134,8 +126,6 @@ class SoftMaxModule(object):
           dout: gradients of the previous modul
         Returns:
           dx: gradients with respect to the input of the module
-    
-        # TEST
         """
         # Get activations from forward pass
         s = self.intermediary_activations
@@ -199,10 +189,8 @@ class CrossEntropyModule(object):
         Returns:
           out: cross entropy loss
         """
-
-        # TEST
-        elementwise_prod = - np.log(x) * y # type: ignore
-        batch_out: np.array = elementwise_prod.sum(1) #TEST
+        elementwise_prod = - np.log(x) * (y) # type: ignore
+        batch_out: np.array = elementwise_prod.sum(1) 
         out = batch_out.mean(0)
         
         return out

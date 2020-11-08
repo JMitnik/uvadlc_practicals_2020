@@ -106,6 +106,8 @@ def train():
         # Perform gradient-descent
         mlp.sgd(lr)
 
+        print(loss.item())
+
         if epoch % FLAGS.eval_freq == 0: #type: ignore
             pass
             # TODO: Get all/per-batch testing
