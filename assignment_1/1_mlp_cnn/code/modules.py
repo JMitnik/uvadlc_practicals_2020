@@ -109,7 +109,25 @@ class SoftMaxModule(object):
         self.intermediary_activations = out
         return out
 
-    def backward(self, dout):
+    def backward_OLD(self, dout):
+        """
+        Backward pass.
+        Args:
+          dout: gradients of the previous modul
+        Returns:
+          dx: gradients with respect to the input of the module
+    
+        # TEST
+        """
+        dldysm = np.transpose(np.array([np.sum(np.multiply(dout, self.intermediary_activations), axis=1)]))
+        Z = np.tile(dldysm, self.intermediary_activations.shape[1])
+
+        dx = dout - Z
+        dx = np.multiply(self.intermediary_activations, dx)
+
+        return dx
+
+    def backward_OLD2(self, dout):
         """
         Backward pass.
         Args:
@@ -134,6 +152,36 @@ class SoftMaxModule(object):
         grad_s = (s_tiled * applied_s).sum(1)
 
         dx = dout * grad_s
+        return dx
+
+    def backward(self, dout):
+        """
+        Backward pass.
+        Args:
+          dout: gradients of the previous modul
+        Returns:
+          dx: gradients with respect to the input of the module
+    
+        # TEST
+        """
+        s = self.intermediary_activations
+        # First we create for each example feature vector, it's outer product with itself
+        # ( p1^2  p1*p2  p1*p3 .... )
+        # ( p2*p1 p2^2   p2*p3 .... )
+        # ( ...                     )
+        tensor1 = np.einsum('ij,ik->ijk', s, s)  # (m, n, n)
+        # Second we need to create an (n,n) identity of the feature vector
+        # ( p1  0  0  ...  )
+        # ( 0   p2 0  ...  )
+        # ( ...            )
+        tensor2 = np.einsum('ij,jk->ijk', s, np.eye(s.shape[1], s.shape[1]))  # (m, n, n)
+        # Then we need to subtract the first tensor from the second
+        # ( p1 - p1^2   -p1*p2   -p1*p3  ... )
+        # ( -p1*p2     p2 - p2^2   -p2*p3 ...)
+        # ( ...                              )
+        dSoftmax = tensor2 - tensor1
+        # Finally, we multiply the dSoftmax (da/dz) by da (dL/da) to get the gradient w.r.t. Z
+        dx = np.einsum('ijk,ik->ij', dSoftmax, dout)  # (m, n)
         return dx
 
 
