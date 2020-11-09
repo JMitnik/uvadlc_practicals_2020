@@ -4,6 +4,7 @@ You should fill in code into indicated sections.
 """
 import numpy as np
 
+DIVISION_CONST = 0.00001
 
 class LinearModule(object):
     """
@@ -25,7 +26,7 @@ class LinearModule(object):
         self.out_features = out_features
 
         self.params = {
-          'weights': np.random.standard_normal((in_features, out_features)), # type: ignore
+          'weights': np.random.normal(loc=0, scale=0.0001, size=(in_features, out_features)), # type: ignore
           'bias': np.zeros(out_features)
         }
 
@@ -75,6 +76,8 @@ class LinearModule(object):
         grad_X = dout @ self.params['weights'].T
         dx = grad_X
         return dx
+
+
 
 class SoftMaxModule(object):
     """
@@ -175,6 +178,81 @@ class SoftMaxModule(object):
         return dx
 
 
+# class SoftMaxModule(object):
+#     """
+#     Softmax activation module.
+#     """
+#     def __init__(self):
+#       self.intermediate = None
+    
+#     def forward(self, x):
+#         """
+#         Forward pass.
+#         Args:
+#           x: input to the module
+#         Returns:
+#           out: output of the module
+    
+#         TODO:
+#         Implement forward pass of the module.
+#         To stabilize computation you should use the so-called Max Trick - https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/
+    
+#         Hint: You can store intermediate variables inside the object. They can be used in backward pass computation.
+#         """
+        
+#         ########################
+#         # PUT YOUR CODE HERE  #
+#         #######################
+#         # Function implemented as in: https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/
+#         def Softmax(a):
+#           b = a.max()
+#           y = np.exp(a - b)
+#           return y / y.sum() 
+        
+        
+#         out = np.apply_along_axis(Softmax, 1, x)
+#         # print(out.shape)
+#         one_vector = np.ones(out.shape[0])
+#         sum_out = np.around(np.sum(out, axis=1), 3)
+#         # print(np.array_equal(one_vector, sum_out))
+        
+#         assert np.array_equal(one_vector, sum_out), 'Softmax for each input doesn\'t sum to 1.'
+#         # raise NotImplementedError
+#         self.intermediate = out.copy()
+#         ########################
+#         # END OF YOUR CODE    #
+#         #######################
+        
+#         return out
+    
+#     def backward(self, dout):
+#         """
+#         Backward pass.
+#         Args:
+#           dout: gradients of the previous module
+#         Returns:
+#           dx: gradients with respect to the input of the module
+    
+#         TODO:
+#         Implement backward pass of the module.
+#         """
+        
+#         ########################
+#         # PUT YOUR CODE HERE  #
+#         #######################
+#         # Change previous input to: self.intermediate variables
+#         dldysm = np.transpose(np.array([np.sum(np.multiply(dout, self.intermediate), axis=1)]))
+#         Z = np.tile(dldysm, self.intermediate.shape[1])
+
+#         dx = dout - Z
+#         dx = np.multiply(self.intermediate, dx)
+#         assert dx.shape ==  self.intermediate.shape, 'Shape of the SoftMax gradient is incorrect'
+#         ########################
+#         # END OF YOUR CODE    #
+#         #######################
+        
+#         return dx
+        
 class CrossEntropyModule(object):
     """
     Cross entropy loss module.
@@ -189,7 +267,7 @@ class CrossEntropyModule(object):
         Returns:
           out: cross entropy loss
         """
-        elementwise_prod = - np.log(x) * (y) # type: ignore
+        elementwise_prod = - np.log(x + DIVISION_CONST) * (y) # type: ignore
         batch_out: np.array = elementwise_prod.sum(1) 
         out = batch_out.mean(0)
         
@@ -206,7 +284,7 @@ class CrossEntropyModule(object):
     
         Implement backward pass of the module.
         """
-        dx= -y / (x * x.shape[0])
+        dx= -y / ((x * x.shape[0]) + DIVISION_CONST)
         return dx
 
 

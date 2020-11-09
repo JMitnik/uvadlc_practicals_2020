@@ -5,8 +5,12 @@ You should fill in code into indicated sections.
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from typing import List, Union
 
 import torch.nn as nn
+from torch.nn.modules.activation import ELU
+
+filter_linear_layers = lambda layers: [layer for layer in layers[::-1] if isinstance(layer, nn.Linear)] 
 
 
 class MLP(nn.Module):
@@ -33,14 +37,29 @@ class MLP(nn.Module):
         TODO:
         Implement initialization of the network.
         """
+
+        hidden_layers = self._init_hidden(n_inputs, n_hidden)
+        last_dim: int = n_inputs if len(hidden_layers) == 0 else filter_linear_layers(self.hidden_layers)[0].weight.shape[1]
+
+        self.layers = nn.Sequential(
+          *hidden_layers,
+          nn.Linear(last_dim, n_classes),
+          nn.Softmax(1)
+        )
         
-        ########################
-        # PUT YOUR CODE HERE  #
-        #######################
-        raise NotImplementedError
-        ########################
-        # END OF YOUR CODE    #
-        #######################
+    def _init_hidden(self, input_dim: int, n_hidden: List[int]) -> List[Union[nn.Module, ELU]]:
+        """Initializes a list of tuples: each tuple contains weights and gradients"""
+        hidden_layers: List[Union[nn.Module, ELU]] = []
+
+        for hidden_dim in n_hidden:
+            # Input size is either the input_dim, or the previous layer's input size
+            in_size: int = input_dim if len(hidden_layers) == 0 else filter_linear_layers(self.hidden_layers)[0].weight.shape[1]
+            hidden_module = nn.Linear(in_size, hidden_dim)
+            hidden_layers.append(hidden_module)
+            hidden_layers.append(ELU())
+
+        return hidden_layers
+
     
     def forward(self, x):
         """
@@ -56,12 +75,6 @@ class MLP(nn.Module):
         Implement forward pass of the network.
         """
         
-        ########################
-        # PUT YOUR CODE HERE  #
-        #######################
-        raise NotImplementedError
-        ########################
-        # END OF YOUR CODE    #
-        #######################
-        
+        out = self.layers.forward(x)
+
         return out

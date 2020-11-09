@@ -76,8 +76,6 @@ class MLP(object):
         X = self.to_out.forward(X)
         out = self.softmax.forward(X)
 
-        out = out + 1e-8
-
         return out
 
     def backward(self, dout):
@@ -102,13 +100,12 @@ class MLP(object):
     def sgd(self, lr: float):
       """Performs stochastic gradient descent with lr"""
       # TEST
-      for idx, layer in enumerate(self.hidden_layers):
+      for idx, layer in enumerate([self.to_out, *self.hidden_layers]):
         if isinstance(layer, LinearModule):
           bias = layer.params['bias']
           weights = layer.params['weights']
           grad_weights = layer.grads['weights'] 
           grad_bias = layer.grads['bias'] 
 
-          layer.test = ''
-          self.hidden_layers[idx].params['bias'] = bias - lr * grad_bias
-          self.hidden_layers[idx].params['weights'] = weights - lr * grad_weights
+          layer.params['bias'] = bias - lr * grad_bias
+          layer.params['weights'] = weights - lr * grad_weights

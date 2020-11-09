@@ -109,6 +109,7 @@ def train():
         print(loss.item())
 
         if epoch % FLAGS.eval_freq == 0: #type: ignore
+            print("hmmm")
             pass
             # TODO: Get all/per-batch testing
             # X, _ = test_dataset.next_batch()
