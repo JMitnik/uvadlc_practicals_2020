@@ -2,3 +2,11 @@
 data_batch_*
 test_batch*
 batches*
+
+# Latex
+*.log
+*.synctex*
+*.out
+*.fls
+*.aux
+*.fdb_latexmk

@@ -107,8 +107,7 @@ def train():
         dnn_hidden_units = []
 
     path_to_data = FLAGS.data_dir #type: ignore
-     # TODO: Maybe can be better?
-    validation_size = 2000
+    validation_size = 0
     data_sets = cifar10_utils.read_data_sets(path_to_data, True, validation_size)
 
     batch_size = FLAGS.batch_size #type: ignore
@@ -153,8 +152,7 @@ def train():
                 'accuracy': acc
             }))
     
-    ensure_path('results/train_loss.png')
-    ensure_path('results/test_accs.png')
+    plot_results(train_losses, test_accs)
 
 def print_flags():
     """
