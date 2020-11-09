@@ -7,12 +7,16 @@ from __future__ import division
 from __future__ import print_function
 
 import argparse
+from matplotlib.pyplot import xlabel
 import numpy as np
 import os
+
+from numpy.lib import utils
 from cifar10_utils import DataSet
 from mlp_numpy import MLP
 from modules import CrossEntropyModule
 import cifar10_utils
+import matplotlib.pyplot as plt
 
 # Default constants
 DNN_HIDDEN_UNITS_DEFAULT = '100'
@@ -26,6 +30,8 @@ DATA_DIR_DEFAULT = './cifar10/cifar-10-batches-py'
 
 FLAGS = None
 
+def ensure_path(path_to_file):
+    os.makedirs(os.path.dirname(path_to_file), exist_ok=True)
 
 def accuracy(predictions, targets):
     """
@@ -51,6 +57,8 @@ def train():
     """
     Performs training and evaluation of MLP model.
     """
+    train_losses = []
+    test_accs = []
 
     ### DO NOT CHANGE SEEDS!
     # Set the random seeds for reproducibility
@@ -96,6 +104,10 @@ def train():
 
         # Perform gradient-descent
         mlp.sgd(lr)
+        train_losses.append({
+            'iteration': iteration,
+            'loss': loss.item()
+        })
 
         if iteration % FLAGS.eval_freq == 0: #type: ignore
             X_test = test_dataset.images
@@ -103,10 +115,34 @@ def train():
             y_test = test_dataset.labels
             pred = mlp.forward(X_test)
             acc = accuracy(pred, y_test)
-            print(acc)
 
+            test_accs.append(({
+                'iteration': iteration,
+                'accuracy': acc
+            }))
     
+    ensure_path('results/train_loss.png')
+    ensure_path('results/test_accs.png')
 
+    plt.plot(
+        [data['iteration'] for data in train_losses], 
+        [data['loss'] for data in train_losses],
+    )
+    plt.title('Loss across training set')
+    plt.xlabel('steps')
+    plt.ylabel('Losses')
+    plt.savefig('results/train_loss.png')
+    plt.cla()
+
+    plt.plot(
+        [data['iteration'] for data in test_accs], 
+        [data['accuracy'] for data in test_accs],
+    )
+    plt.title('Accuracy for the entire data-set, across steps')
+    plt.xlabel('steps')
+    plt.ylabel('accuracy')
+    plt.savefig('results/test_accs.png')
+    
 
 def print_flags():
     """
