@@ -40,20 +40,11 @@ def accuracy(predictions, targets):
     Returns:
       accuracy: scalar float, the accuracy of predictions,
                 i.e. the average correct predictions over the whole batch
-
-    TODO:
-        Implement accuracy computation.
     """
+    correct = (targets.argmax(1) == predictions.argmax(1)).sum()
+    total = predictions.shape[0]
 
-    ########################
-    # PUT YOUR CODE HERE  #
-    #######################
-    raise NotImplementedError
-    ########################
-    # END OF YOUR CODE    #
-    #######################
-
-    return accuracy
+    return correct / total
 
 
 def train():
@@ -81,7 +72,7 @@ def train():
     data_sets = cifar10_utils.read_data_sets(path_to_data, True, validation_size)
 
     batch_size = FLAGS.batch_size #type: ignore
-    nr_epochs = FLAGS.max_steps #type: ignore
+    nr_iterations = FLAGS.max_steps #type: ignore
 
     train_dataset: DataSet = data_sets['train']
     test_dataset: DataSet = data_sets['test']
@@ -92,7 +83,7 @@ def train():
     loss_module = CrossEntropyModule()
     
     # Training loop
-    for epoch in range(nr_epochs):
+    for iteration in range(nr_iterations):
         X, y = train_dataset.next_batch(batch_size)
         # Reshape to correspond to single-vector
         X = X.reshape(batch_size, -1)
@@ -106,16 +97,13 @@ def train():
         # Perform gradient-descent
         mlp.sgd(lr)
 
-        print(loss.item())
-
-        if epoch % FLAGS.eval_freq == 0: #type: ignore
-            print("hmmm")
-            pass
-            # TODO: Get all/per-batch testing
-            # X, _ = test_dataset.next_batch()
-            # MLP.forward(test_dataset)
-            # acc = accuracy()
-            # print()
+        if iteration % FLAGS.eval_freq == 0: #type: ignore
+            X_test = test_dataset.images
+            X_test = X_test.reshape(X_test.shape[0], -1)
+            y_test = test_dataset.labels
+            pred = mlp.forward(X_test)
+            acc = accuracy(pred, y_test)
+            print(acc)
 
     
 
