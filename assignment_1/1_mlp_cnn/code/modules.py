@@ -106,47 +106,6 @@ class SoftMaxModule(object):
         self.intermediary_activations = out
         return out
 
-    def backward_OLD(self, dout):
-        """
-        Backward pass.
-        Args:
-          dout: gradients of the previous modul
-        Returns:
-          dx: gradients with respect to the input of the module
-        """
-        dldysm = np.transpose(np.array([np.sum(np.multiply(dout, self.intermediary_activations), axis=1)]))
-        Z = np.tile(dldysm, self.intermediary_activations.shape[1])
-
-        dx = dout - Z
-        dx = np.multiply(self.intermediary_activations, dx)
-
-        return dx
-
-    def backward_OLD2(self, dout):
-        """
-        Backward pass.
-        Args:
-          dout: gradients of the previous modul
-        Returns:
-          dx: gradients with respect to the input of the module
-        """
-        # Get activations from forward pass
-        s = self.intermediary_activations
-
-        # Get an identity matrix across batches: (batch-size x nr-classes x nr-classes)
-        batch_identity = np.dstack([np.identity(s.shape[1])] * (s.shape[0])).T
-
-        # Create activation matrix, such that it becomes (batch x activation-copied-across-rows x activation)
-        s_tiled = np.tile(s.T, (s.shape[1], 1, 1)).transpose(2, 0, 1)
-
-        # Subtract Identity
-        applied_s = batch_identity - s_tiled
-
-        grad_s = (s_tiled * applied_s).sum(1)
-
-        dx = dout * grad_s
-        return dx
-
     def backward(self, dout):
         """
         Backward pass.
@@ -155,104 +114,15 @@ class SoftMaxModule(object):
         Returns:
           dx: gradients with respect to the input of the module
     
-        # TODO: Convert / understand the einsum
+        # TODO: Convert / understand the einsum better
         """
         s = self.intermediary_activations
-        # First we create for each example feature vector, it's outer product with itself
-        # ( p1^2  p1*p2  p1*p3 .... )
-        # ( p2*p1 p2^2   p2*p3 .... )
-        # ( ...                     )
-        tensor1 = np.einsum('ij,ik->ijk', s, s)  # (m, n, n)
-        # Second we need to create an (n,n) identity of the feature vector
-        # ( p1  0  0  ...  )
-        # ( 0   p2 0  ...  )
-        # ( ...            )
-        tensor2 = np.einsum('ij,jk->ijk', s, np.eye(s.shape[1], s.shape[1]))  # (m, n, n)
-        # Then we need to subtract the first tensor from the second
-        # ( p1 - p1^2   -p1*p2   -p1*p3  ... )
-        # ( -p1*p2     p2 - p2^2   -p2*p3 ...)
-        # ( ...                              )
-        dSoftmax = tensor2 - tensor1
-        # Finally, we multiply the dSoftmax (da/dz) by da (dL/da) to get the gradient w.r.t. Z
-        dx = np.einsum('ijk,ik->ij', dSoftmax, dout)  # (m, n)
+        self_activations = np.einsum('ij,ik->ijk', s, s)
+        batched_input = np.einsum('ij,jk->ijk', s, np.eye(s.shape[1], s.shape[1]))
+        ds = batched_input - self_activations
+        dx = np.einsum('ijk,ik->ij', ds, dout)
         return dx
 
-
-# class SoftMaxModule(object):
-#     """
-#     Softmax activation module.
-#     """
-#     def __init__(self):
-#       self.intermediate = None
-    
-#     def forward(self, x):
-#         """
-#         Forward pass.
-#         Args:
-#           x: input to the module
-#         Returns:
-#           out: output of the module
-    
-#         TODO:
-#         Implement forward pass of the module.
-#         To stabilize computation you should use the so-called Max Trick - https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/
-    
-#         Hint: You can store intermediate variables inside the object. They can be used in backward pass computation.
-#         """
-        
-#         ########################
-#         # PUT YOUR CODE HERE  #
-#         #######################
-#         # Function implemented as in: https://timvieira.github.io/blog/post/2014/02/11/exp-normalize-trick/
-#         def Softmax(a):
-#           b = a.max()
-#           y = np.exp(a - b)
-#           return y / y.sum() 
-        
-        
-#         out = np.apply_along_axis(Softmax, 1, x)
-#         # print(out.shape)
-#         one_vector = np.ones(out.shape[0])
-#         sum_out = np.around(np.sum(out, axis=1), 3)
-#         # print(np.array_equal(one_vector, sum_out))
-        
-#         assert np.array_equal(one_vector, sum_out), 'Softmax for each input doesn\'t sum to 1.'
-#         # raise NotImplementedError
-#         self.intermediate = out.copy()
-#         ########################
-#         # END OF YOUR CODE    #
-#         #######################
-        
-#         return out
-    
-#     def backward(self, dout):
-#         """
-#         Backward pass.
-#         Args:
-#           dout: gradients of the previous module
-#         Returns:
-#           dx: gradients with respect to the input of the module
-    
-#         TODO:
-#         Implement backward pass of the module.
-#         """
-        
-#         ########################
-#         # PUT YOUR CODE HERE  #
-#         #######################
-#         # Change previous input to: self.intermediate variables
-#         dldysm = np.transpose(np.array([np.sum(np.multiply(dout, self.intermediate), axis=1)]))
-#         Z = np.tile(dldysm, self.intermediate.shape[1])
-
-#         dx = dout - Z
-#         dx = np.multiply(self.intermediate, dx)
-#         assert dx.shape ==  self.intermediate.shape, 'Shape of the SoftMax gradient is incorrect'
-#         ########################
-#         # END OF YOUR CODE    #
-#         #######################
-        
-#         return dx
-        
 class CrossEntropyModule(object):
     """
     Cross entropy loss module.
