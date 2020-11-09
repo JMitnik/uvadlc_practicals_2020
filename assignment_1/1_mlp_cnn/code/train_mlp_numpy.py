@@ -31,7 +31,39 @@ DATA_DIR_DEFAULT = './cifar10/cifar-10-batches-py'
 FLAGS = None
 
 def ensure_path(path_to_file):
+    """Ensures the right directories exist for the creation of a file."""
     os.makedirs(os.path.dirname(path_to_file), exist_ok=True)
+
+def plot_results(
+    train_results, 
+    test_results, 
+    path_to_train_results = 'results/numpy-train_loss.png', 
+    path_to_test_results = 'results/numpy-test_accs.png'
+):
+    """Plots the train(=acc) and test(=acc) charts for the results"""
+
+    ensure_path(path_to_train_results)
+    ensure_path(path_to_test_results)
+
+    plt.plot(
+        [data['iteration'] for data in train_results], 
+        [data['loss'] for data in train_results],
+    )
+    plt.title('Loss across training set')
+    plt.xlabel('steps')
+    plt.ylabel('Losses')
+    plt.savefig(path_to_train_results)
+    plt.cla()
+
+    plt.plot(
+        [data['iteration'] for data in test_results], 
+        [data['accuracy'] for data in test_results],
+    )
+    plt.title('Accuracy for the entire data-set, across steps')
+    plt.xlabel('steps')
+    plt.ylabel('accuracy')
+    plt.savefig(path_to_test_results)
+    
 
 def accuracy(predictions, targets):
     """
@@ -123,26 +155,6 @@ def train():
     
     ensure_path('results/train_loss.png')
     ensure_path('results/test_accs.png')
-
-    plt.plot(
-        [data['iteration'] for data in train_losses], 
-        [data['loss'] for data in train_losses],
-    )
-    plt.title('Loss across training set')
-    plt.xlabel('steps')
-    plt.ylabel('Losses')
-    plt.savefig('results/train_loss.png')
-    plt.cla()
-
-    plt.plot(
-        [data['iteration'] for data in test_accs], 
-        [data['accuracy'] for data in test_accs],
-    )
-    plt.title('Accuracy for the entire data-set, across steps')
-    plt.xlabel('steps')
-    plt.ylabel('accuracy')
-    plt.savefig('results/test_accs.png')
-    
 
 def print_flags():
     """
