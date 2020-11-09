@@ -50,7 +50,7 @@ class MLP(object):
 
         for hidden_dim in n_hidden:
             # Input size is either the input_dim, or the previous layer's input size
-            in_size: int = input_dim if len(hidden_layers) == 0 else filter_linear_layers(self.hidden_layers)[0].params['weights'].shape[1]
+            in_size: int = input_dim if len(hidden_layers) == 0 else filter_linear_layers(hidden_layers)[0].params['weights'].shape[1]
             hidden_module = LinearModule(in_size, hidden_dim)
             hidden_layers.append(hidden_module)
             hidden_layers.append(ELUModule())
