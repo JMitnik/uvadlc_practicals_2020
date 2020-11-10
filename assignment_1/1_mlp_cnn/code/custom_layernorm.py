@@ -29,23 +29,20 @@ class CustomLayerNormAutograd(nn.Module):
           n_neurons: int specifying the number of neurons
           eps: small float to be added to the variance for stability
         
-        TODO:
           Save parameters for the number of neurons and eps.
           Initialize parameters gamma and beta via nn.Parameter
         """
         super(CustomLayerNormAutograd, self).__init__()
-        
-        ########################
-        # PUT YOUR CODE HERE  #
-        #######################
-        
-        raise NotImplementedError
-        
-        ########################
-        # END OF YOUR CODE    #
-        #######################
+
+        self.n_neurons: int = n_neurons
+        self.eps: float = eps
+
+        self.gamma: nn.Parameter = nn.Parameter(torch.normal(mean=torch.zeros(n_neurons), std=torch.tensor(0.00001)), requires_grad=True) #type: ignore
+        self.beta: nn.Parameter = nn.Parameter(torch.normal(mean=torch.zeros(n_neurons), std=torch.tensor(0.00001)), requires_grad=True) #type: ignore
+
+        self.eps = eps
     
-    def forward(self, input):
+    def forward(self, input: torch.Tensor):
         """
         Compute the layer normalization
         
@@ -59,17 +56,14 @@ class CustomLayerNormAutograd(nn.Module):
           Implement layer normalization forward pass as given in the assignment.
           For the case that you make use of torch.var be aware that the flag unbiased=False should be set.
         """
-        
-        ########################
-        # PUT YOUR CODE HERE  #
-        #######################
 
-        raise NotImplementedError
-
-        ########################
-        # END OF YOUR CODE    #
-        #######################
+        assert input.shape[1] == self.n_neurons, f"Input with nr neurons {input.shape[1]} does not match LayerNorm: expected {n_neurons}"
         
+        mean = torch.mean(input, 1)
+        var = torch.var(input - mean[:, None], 1, unbiased=False)
+        input_resized = (input - mean[:, None]) / (torch.sqrt(var + torch.tensor(self.eps)))[:, None]
+        
+        out = self.gamma[None, :] * input_resized + self.beta[None, :]
         return out
 
 

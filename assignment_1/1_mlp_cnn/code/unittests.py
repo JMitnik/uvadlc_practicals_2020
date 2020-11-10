@@ -165,5 +165,5 @@ if __name__ == '__main__':
     unittest.TextTestRunner(verbosity=2).run(suite)
 
     # TODO: Enable layer norm
-    # suite = unittest.TestLoader().loadTestsFromTestCase(TestLayerNorm)
-    # unittest.TextTestRunner(verbosity=3).run(suite)
+    suite = unittest.TestLoader().loadTestsFromTestCase(TestLayerNorm)
+    unittest.TextTestRunner(verbosity=3).run(suite)
