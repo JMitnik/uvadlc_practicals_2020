@@ -118,6 +118,7 @@ def train():
     train_dataset: DataSet = data_sets['train']
 
     for iteration in range(nr_iterations):
+        net.train()
         optimizer.zero_grad()
         X, y = train_dataset.next_batch(batch_size)
         X: torch.Tensor = torch.from_numpy(X).to(device)
@@ -125,10 +126,11 @@ def train():
         preds = net(X).to(device)
         loss = loss_fn(preds, y.argmax(1))
 
-        train_losses.append({
-            'iteration': iteration,
-            'loss': loss.item()
-        })
+        if iteration % 10 == 0:
+            train_losses.append({
+                'iteration': iteration,
+                'loss': loss.item()
+            })
 
         loss.backward()
         optimizer.step()
@@ -144,6 +146,7 @@ def train():
             acc = 0
             
             with torch.no_grad():
+                net.eval()
                 while test_dataset.epochs_completed < target_epochs_completed:
                     X_test, y_test = test_dataset.next_batch(batch_size)
                     X_test = torch.from_numpy(X_test).to(device)
