@@ -8,7 +8,7 @@
             "name": "Python: Current File",
             "type": "python",
             "request": "launch",
-            "program": "train_convnet_pytorch.py",
+            "program": "train_mlp_pytorch.py",
             "console": "integratedTerminal"
         }
     ]

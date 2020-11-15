@@ -37,9 +37,9 @@ class MLP(nn.Module):
         TODO:
         Implement initialization of the network.
         """
-
+        super(MLP, self).__init__()
         hidden_layers = self._init_hidden(n_inputs, n_hidden)
-        last_dim: int = n_inputs if len(hidden_layers) == 0 else filter_linear_layers(self.hidden_layers)[0].weight.shape[1]
+        last_dim: int = n_inputs if len(hidden_layers) == 0 else filter_linear_layers(hidden_layers)[0].weight.shape[1]
 
         self.layers = nn.Sequential(
           *hidden_layers,
@@ -53,7 +53,7 @@ class MLP(nn.Module):
 
         for hidden_dim in n_hidden:
             # Input size is either the input_dim, or the previous layer's input size
-            in_size: int = input_dim if len(hidden_layers) == 0 else filter_linear_layers(self.hidden_layers)[0].weight.shape[1]
+            in_size: int = input_dim if len(hidden_layers) == 0 else filter_linear_layers(hidden_layers)[0].weight.shape[1]
             hidden_module = nn.Linear(in_size, hidden_dim)
             hidden_layers.append(hidden_module)
             hidden_layers.append(ELU())
