@@ -32,6 +32,7 @@ DATA_DIR_DEFAULT = './cifar10/cifar-10-batches-py'
 
 FLAGS = None
 
+device = torch.device('cuda') if torch.cuda.is_available() else 'cpu'
 
 def ensure_path(path_to_file):
     """Ensures the right directories exist for the creation of a file."""
@@ -110,6 +111,7 @@ def train():
     nr_iterations = FLAGS.max_steps #type: ignore
 
     net = ConvNet(3, 10)
+    net.to(device)
     optimizer = Adam(params=net.parameters(), lr=1e-4)
     loss_fn = nn.CrossEntropyLoss()
 
@@ -118,10 +120,10 @@ def train():
     for iteration in range(nr_iterations):
         optimizer.zero_grad()
         X, y = train_dataset.next_batch(batch_size)
-        X: torch.Tensor = torch.from_numpy(X)
-        y: torch.Tensor = torch.from_numpy(y)
+        X: torch.Tensor = torch.from_numpy(X).to(device)
+        y: torch.Tensor = torch.from_numpy(y).to(device)
         # X = X.flatten(1)
-        preds = net(X)
+        preds = net(X).to(device)
         loss = loss_fn(preds, y.argmax(1))
 
         train_losses.append(loss)
@@ -137,8 +139,8 @@ def train():
             with torch.no_grad():
                 while test_dataset.epochs_completed < target_epochs_completed:
                     X_test, y_test = test_dataset.next_batch(batch_size)
-                    X_test = torch.from_numpy(X_test)
-                    y_test = torch.from_numpy(y_test)
+                    X_test = torch.from_numpy(X_test).to(device)
+                    y_test = torch.from_numpy(y_test).to(device)
                     pred_test = net.forward(X_test)
 
                     acc = accuracy(pred_test, y_test)
