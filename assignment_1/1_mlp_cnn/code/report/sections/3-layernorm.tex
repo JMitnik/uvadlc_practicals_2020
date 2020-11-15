@@ -1,0 +1,80 @@
+\subsection*{3.2a: Manual implementation of backward pass}
+I will start by writing down, in essence, all known shapes.
+
+\begin{enumerate}
+    \item $\emph{\textbf{X}} \in \mathbb{R}^{S * M}$
+    \item $\emph{\textbf{Y}} \in \mathbb{R}^{S * M}$ (same shape as X)
+    \item $L \in \mathbb{R}^{1}$
+    \item $\gamma \in \mathbb{R}^{M}$
+    \item $\beta \in \mathbb{R}^{M}$
+    \item $\frac{\delta L}{\delta \gamma} \in \mathbb{R}^{M}$
+    \item $\frac{\delta L}{\delta \beta} \in \mathbb{R}^{M}$
+    \item $\frac{\delta L}{\delta \emph{\textbf{Y}}} \in \mathbb{R}^{S * M}$
+    \item $\frac{\delta L}{\delta \emph{\textbf{X}}} \in \mathbb{R}^{S * M}$
+\end{enumerate}
+
+To start, the first derivative we calculate is that of $\frac{\delta L}{\delta \gamma}$.
+
+% DL_dgamma
+% TODO: How do we get to the full form again?
+{\Large $\frac{\delta L}{\delta \gamma}$ }:
+\boxed{\begin{aligned}
+    \frac{\delta L}{\delta \gamma}
+    &=> [\frac{\delta L}{\delta \gamma}]_i
+    = \frac{\delta L}{\delta \gamma}_i
+    = \sum_{sj} \frac{\delta L}{\delta Y_{sj}} * \frac{\delta Y_{sj}}{\delta \gamma_i} \\
+    % Now we start
+    &= \sum_{sj} \frac{\delta L}{\delta Y_{sj}} 
+        * \frac{\delta \gamma_j \hat{X}_{sj}}{\delta \gamma_i} \\
+    &= \sum_{sj} \frac{\delta L}{\delta Y_{sj}} 
+        * \delta_{ji} \hat{X}_{sj} \\
+    &= \sum_{s} \frac{\delta L}{\delta Y_{si}} 
+        * \hat{X}_{si} \\
+    &= \sum_{s} \textbf{1}_s*  \frac{\delta L}{\delta Y_{si}} 
+        * \hat{X}_{si} \\
+    &=> \textbf{1}^T * [\frac{\delta L}{\delta Y} 
+        \circ \hat{X}] && \text{where $$\textbf{1}$$ is a 1xS vector} \\
+\end{aligned}}
+
+\vspace{1cm}
+In a similar way we can calculate the derivative with respect to $\beta$.
+
+% DL_dbeta
+% TODO: How do we get to the full form again?
+{\Large $\frac{\delta L}{\delta \beta}$ }:
+\boxed{\begin{aligned}
+    \frac{\delta L}{\delta \beta}
+    &=> [\frac{\delta L}{\delta \beta}]_i
+    = \frac{\delta L}{\delta \beta}_i
+    = \sum_{sj} \frac{\delta L}{\delta Y_{sj}} * \frac{\delta Y_{sj}}{\delta \beta_i} \\
+    % Now we start
+    &= \sum_{sj} \frac{\delta L}{\delta Y_{sj}} 
+        * \frac{\delta \gamma_j \hat{X}_{sj} + \beta_J}{\delta \beta_i} \\
+    &= \sum_{sj} \frac{\delta L}{\delta Y_{sj}} 
+        * \delta_{ji} \\
+    &= \sum_{s} \frac{\delta L}{\delta Y_{si}} \\
+    &= \textbf{1}^T * \frac{\delta L}{\delta Y} && \text{where $$\textbf{1}$$ is a 1xS vector} \\
+\end{aligned}}
+
+\vspace{1cm}
+Now on to calculating the derivative with respect to $X$. It would be good to first define the starting chain:
+
+\begin{align}
+    \frac{\delta L}{\delta \textbf{\emph{X}}}
+    &=> \frac{\delta L}{\delta X_{ri}}
+    = \sum_{sj} \frac{\delta L}{\delta Y_{sj}} * \frac{\delta Y_{sj}}{\delta X_{ri}}
+\end{align}
+
+When focusing on $\frac{\delta Y_{sj}}{\delta X_{ri}}$, there are a number of aspects that come to play. 
+To start, we can break it down into a chain, where we explicitly focus on the "contribution"
+that $\mu$ and $\sigma$ have on X.
+
+\begin{align}
+    \frac{\delta Y_{sj}}{\delta X_{ri}} &= 
+        % Directly X first
+        \frac{\delta Y_{sj}}{\delta \hat{X}_{sj}} * \frac{\delta \hat{X}_{sj}}{\delta X_{ri}}
+            + \frac{\delta Y_{sj}}{\delta \mu_j} * \frac{\delta \mu_j}{\delta X_{ri}}
+            + \frac{\delta Y_{sj}}{\delta \sigma^2_j} * \frac{\delta \sigma^2_j}{\delta X_{ri}}
+\end{align}
+
+This contains quite a number of steps

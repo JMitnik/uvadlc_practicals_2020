@@ -6,6 +6,30 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
+import torch.nn as nn
+
+class ResnetBlock(nn.Module):
+  def __init__(self, channel_in, channel_out, kernel, stride, padding) -> None:
+    super(ResnetBlock, self).__init__()
+    self.in_size = channel_in
+    self.out_size = channel_out
+    self.kernel = kernel
+    self.stride = stride
+    self.padding = padding
+
+    self.batchnorm = nn.BatchNorm2d(channel_in)
+    self.relu = nn.ReLU()
+    self.conv = nn.Conv2d(channel_in, channel_out, kernel, stride, padding)
+
+  def forward(self, input):
+    X = input
+    res_X = self.batchnorm(X)
+    res_X = self.relu(res_X)
+    res_X = self.conv(res_X)
+
+    return X + res_X
+
+
 
 class ConvNet(nn.Module):
     """
@@ -26,14 +50,34 @@ class ConvNet(nn.Module):
         TODO:
         Implement initialization of the network.
         """
+        super(ConvNet, self).__init__()
+        self.n_channels = n_channels
+        self.n_classes = n_classes
         
-        ########################
-        # PUT YOUR CODE HERE  #
-        #######################
-        raise NotImplementedError
-        ########################
-        # END OF YOUR CODE    #
-        #######################
+        self.layers = nn.Sequential(
+          nn.Conv2d(n_channels, 64, (3, 3), 1, 1),
+          ResnetBlock(64, 64, (3,3), 1, 1),
+          nn.Conv2d(64, 128, (1,1), 1, 0),
+          nn.MaxPool2d((3,3), 2, 1),
+          ResnetBlock(128, 128, (3,3), 1, 1),
+          ResnetBlock(128, 128, (3,3), 1, 1),
+          nn.Conv2d(128, 256, (1,1), 1, 0),
+          nn.MaxPool2d((3,3), 2, 1),
+          ResnetBlock(256, 256, (3,3), 1, 1),
+          ResnetBlock(256, 256, (3,3), 1, 1),
+          nn.Conv2d(256, 512, (1,1), 1, 0),
+          nn.MaxPool2d((3,3), 2, 1),
+          ResnetBlock(512, 512, (3,3), 1, 1),
+          ResnetBlock(512, 512, (3,3), 1, 1),
+          nn.MaxPool2d((3,3), 2, 1),
+          ResnetBlock(512, 512, (3,3), 1, 1),
+          ResnetBlock(512, 512, (3,3), 1, 1),
+          nn.MaxPool2d((3,3), 2, 1),
+          nn.BatchNorm2d(512),
+          nn.ReLU(),
+          nn.Flatten(1),
+          nn.Linear(512, 10)
+        )
     
     def forward(self, x):
         """
@@ -49,12 +93,5 @@ class ConvNet(nn.Module):
         Implement forward pass of the network.
         """
         
-        ########################
-        # PUT YOUR CODE HERE  #
-        #######################
-        raise NotImplementedError
-        ########################
-        # END OF YOUR CODE    #
-        #######################
-        
+        out = self.layers(x)
         return out

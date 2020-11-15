@@ -37,8 +37,8 @@ class CustomLayerNormAutograd(nn.Module):
         self.n_neurons: int = n_neurons
         self.eps: float = eps
 
-        self.gamma: nn.Parameter = nn.Parameter(torch.normal(mean=torch.zeros(n_neurons), std=torch.tensor(0.00001)), requires_grad=True) #type: ignore
-        self.beta: nn.Parameter = nn.Parameter(torch.normal(mean=torch.zeros(n_neurons), std=torch.tensor(0.00001)), requires_grad=True) #type: ignore
+        self.gamma: nn.Parameter = nn.Parameter(torch.ones(n_neurons)) #type: ignore
+        self.beta: nn.Parameter = nn.Parameter(torch.zeros(n_neurons)) #type: ignore
 
         self.eps = eps
     
@@ -61,7 +61,11 @@ class CustomLayerNormAutograd(nn.Module):
         
         mean = torch.mean(input, 1)
         var = torch.var(input - mean[:, None], 1, unbiased=False)
-        input_resized = (input - mean[:, None]) / (torch.sqrt(var + torch.tensor(self.eps)))[:, None]
+
+        up = input - mean[:, None]
+        down = torch.sqrt(var + torch.tensor(self.eps))
+
+        input_resized = up / down[:, None]
         
         out = self.gamma[None, :] * input_resized + self.beta[None, :]
         return out
