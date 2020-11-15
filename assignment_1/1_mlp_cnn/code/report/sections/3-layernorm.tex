@@ -77,4 +77,29 @@ that $\mu$ and $\sigma$ have on X.
             + \frac{\delta Y_{sj}}{\delta \sigma^2_j} * \frac{\delta \sigma^2_j}{\delta X_{ri}}
 \end{align}
 
-This contains quite a number of steps
+This contains quite a number of steps. It would be good to start from the first term we encounter.
+
+{\Large $\frac{\delta Y_{sj}}{\delta X_{ri}}$ }:
+\boxed{\begin{aligned}
+    \frac{\delta L}{\delta \beta}
+    &=> [\frac{\delta L}{\delta \beta}]_i
+    = \frac{\delta L}{\delta \beta}_i
+    = \sum_{sj} \frac{\delta L}{\delta Y_{sj}} * \frac{\delta Y_{sj}}{\delta \beta_i} \\
+    % Now we start
+    &= \sum_{sj} \frac{\delta L}{\delta Y_{sj}} 
+        * \frac{\delta \gamma_j \hat{X}_{sj} + \beta_J}{\delta \beta_i} \\
+    &= \sum_{sj} \frac{\delta L}{\delta Y_{sj}} 
+        * \delta_{ji} \\
+    &= \sum_{s} \frac{\delta L}{\delta Y_{si}} \\
+    &= \textbf{1}^T * \frac{\delta L}{\delta Y} && \text{where $$\textbf{1}$$ is a 1xS vector} \\
+\end{aligned}}
+
+
+\begin{enumerate}
+    \item $\frac{\delta Y_{sj}}{\delta \hat{X}_{sj}}$
+    \item $\frac{\delta \hat{X}_{sj}}{\delta X_{ri}}$
+    \item $\frac{\delta Y_{sj}}{\delta \mu_j}$
+    \item $\frac{\delta \mu_j}{\delta X_{ri}}$
+    \item $\frac{\delta Y_{sj}}{\delta \sigma^2_j}$
+    \item $\frac{\delta \sigma^2_j}{\delta X_{ri}}$
+\end{enumerate}

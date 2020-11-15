@@ -122,7 +122,6 @@ def train():
         X, y = train_dataset.next_batch(batch_size)
         X: torch.Tensor = torch.from_numpy(X).to(device)
         y: torch.Tensor = torch.from_numpy(y).to(device)
-        # X = X.flatten(1)
         preds = net(X).to(device)
         loss = loss_fn(preds, y.argmax(1))
 
@@ -130,11 +129,15 @@ def train():
         loss.backward()
         optimizer.step()
 
+        if iteration % 50 == 0:
+            print(f"Loss on iteration {iteration} is {loss.item()}")
+
         if iteration % FLAGS.eval_freq == 0: #type: ignore
             acc_scores = []
             test_dataset: DataSet = data_sets['test']
             latest_epochs_completed = test_dataset.epochs_completed
             target_epochs_completed = latest_epochs_completed + 1
+            acc = 0
             
             with torch.no_grad():
                 while test_dataset.epochs_completed < target_epochs_completed:
@@ -146,14 +149,15 @@ def train():
                     acc = accuracy(pred_test, y_test)
                     acc_scores.append(acc)
             
+            print(f"Average test accuracy on {iteration} is {acc}")
             acc = np.mean(acc_scores).item()
             test_accs.append(({
                 'iteration': iteration,
                 'accuracy': acc
             }))
     
-    
     plot_results(train_losses, test_accs)
+
 
 
 
