@@ -63,7 +63,7 @@ def plot_results(
         [data['iteration'] for data in test_results], 
         [data['accuracy'] for data in test_results],
     )
-    plt.title('Accuracy for the entire data-set, across steps')
+    plt.title('Accuracy for the entire data-set, across steps, for Convnets')
     plt.xlabel('steps')
     plt.ylabel('accuracy')
     plt.savefig(path_to_test_results)
@@ -125,7 +125,11 @@ def train():
         preds = net(X).to(device)
         loss = loss_fn(preds, y.argmax(1))
 
-        train_losses.append(loss)
+        train_losses.append({
+            'iteration': iteration,
+            'loss': loss.item()
+        })
+
         loss.backward()
         optimizer.step()
 
