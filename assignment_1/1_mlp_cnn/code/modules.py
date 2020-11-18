@@ -38,7 +38,6 @@ class LinearModule(object):
         self.intermediary_activations_input = None
         self.intermediary_activations = None
 
-        # TEST: Do we actually change this (as reference) in our sgd loop?
         self.test = ''
     
     def forward(self, x):

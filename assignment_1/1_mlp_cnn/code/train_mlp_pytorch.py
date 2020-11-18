@@ -9,11 +9,15 @@ from __future__ import print_function
 import argparse
 import numpy as np
 import os
+import matplotlib.pyplot as plt
+from torch.optim.sgd import SGD
 from mlp_pytorch import MLP
+from cifar10_utils import DataSet
 import cifar10_utils
 
 import torch
 import torch.nn as nn
+from torch.nn.functional import softmax
 from torch.optim import Adam
 
 # Default constants
@@ -39,8 +43,8 @@ def ensure_path(path_to_file):
 def plot_results(
     train_results, 
     test_results, 
-    path_to_train_results = 'results/pytorch-mlp-train_loss.png', 
-    path_to_test_results = 'results/pytorch-mlp-test_accs.png'
+    path_to_train_results = f'results/pytorch-mlp-train_loss.png', 
+    path_to_test_results = f'results/pytorch-mlp-test_accs.png'
 ):
     """Plots the train(=acc) and test(=acc) charts for the results"""
 
@@ -51,7 +55,7 @@ def plot_results(
         [data['iteration'] for data in train_results], 
         [data['loss'] for data in train_results],
     )
-    plt.title('Loss across training set')
+    plt.title(f'{FLAGS.run_label}: Training loss')
     plt.xlabel('steps')
     plt.ylabel('Losses')
     plt.savefig(path_to_train_results)
@@ -61,7 +65,7 @@ def plot_results(
         [data['iteration'] for data in test_results], 
         [data['accuracy'] for data in test_results],
     )
-    plt.title('Accuracy for the entire data-set, across steps, for Convnets')
+    plt.title(f'{FLAGS.run_label}: Test accuracy')
     plt.xlabel('steps')
     plt.ylabel('accuracy')
     plt.savefig(path_to_test_results)
@@ -90,6 +94,14 @@ def accuracy(predictions, targets):
 
     return correct / total
 
+def init_optimizer(optimizer_literal):
+    if optimizer_literal and optimizer_literal == 'Adam':
+        print('INFO: Using Adam with default scheduling!')
+        return Adam
+    
+    print('INFO: Using SGD!')
+    return SGD
+
 
 def train():
     """
@@ -100,6 +112,9 @@ def train():
     """
     train_losses = []
     test_accs = []
+
+    if (FLAGS.run_label):
+        print(f'Running experiment with label {FLAGS.run_label}')
 
     ### DO NOT CHANGE SEEDS!
     # Set the random seeds for reproducibility
@@ -125,15 +140,22 @@ def train():
     
     batch_size = FLAGS.batch_size #type: ignore
     nr_iterations = FLAGS.max_steps #type: ignore
+    lr = FLAGS.learning_rate
 
-    net = MLP(in_size, dnn_hidden_units, nr_labels).to(device)
-    optimizer = Adam(params=net.parameters(), lr=1e-4)
+    extra_mlp_params = {
+        'use_batchnorm': FLAGS.use_batchnorm,
+        'intermediate_activation_fn': FLAGS.intermediate_activation_fn
+    }
+
+    net = MLP(in_size, dnn_hidden_units, nr_labels, extra_mlp_params).to(device)
+    net.train()
+    optimizer_type = init_optimizer(FLAGS.optimizer)
+    optimizer = optimizer_type(params=net.parameters(), lr=lr)
+
+    # Hm: if loss is CE, we cant do Softmax
     loss_fn = nn.CrossEntropyLoss()
-
-    # neg_slope = FLAGS.neg_slope
     
     for iteration in range(nr_iterations):
-        optimizer.zero_grad()
         X, y = train_dataset.next_batch(batch_size)
         X: torch.Tensor = torch.from_numpy(X).to(device)
         y: torch.Tensor = torch.from_numpy(y).to(device)
@@ -141,13 +163,14 @@ def train():
         preds = net(X).to(device)
         loss = loss_fn(preds, y.argmax(1))
 
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+
         train_losses.append({
             'iteration': iteration,
             'loss': loss.item()
         })
-
-        loss.backward()
-        optimizer.step()
 
         if iteration % 50 == 0:
             print(f"Loss on iteration {iteration} is {loss.item()}")
@@ -159,25 +182,31 @@ def train():
             target_epochs_completed = latest_epochs_completed + 1
             acc = 0
             
+            # Testing
             with torch.no_grad():
                 while test_dataset.epochs_completed < target_epochs_completed:
                     X_test, y_test = test_dataset.next_batch(batch_size)
                     X_test = torch.from_numpy(X_test).to(device)
-                    X_test = X.flatten(1)
+                    X_test = X_test.flatten(1)
                     y_test = torch.from_numpy(y_test).to(device)
                     pred_test = net.forward(X_test)
 
                     acc = accuracy(pred_test, y_test)
                     acc_scores.append(acc)
             
-            print(f"Average test accuracy on {iteration} is {acc}")
             acc = np.mean(acc_scores).item()
+            print(f"Average test accuracy on {iteration} is {acc}")
             test_accs.append(({
                 'iteration': iteration,
                 'accuracy': acc
             }))
     
-    plot_results(train_losses, test_accs)
+    plot_results(
+        train_losses,
+        test_accs,
+        f'results/pytorch-mlp-{FLAGS.run_label}.train_loss.png',
+        f'results/pytorch-mlp-{FLAGS.run_label}.test_accs.png',
+    )
 
 def print_flags():
     """
@@ -204,6 +233,16 @@ def main():
 if __name__ == '__main__':
     # Command line arguments
     parser = argparse.ArgumentParser()
+    parser.add_argument('--run_experiments', type=bool, default=False,
+                        help='Run experiments, or prefer the default settings?')
+    parser.add_argument('--run_label', type=str, default=DNN_HIDDEN_UNITS_DEFAULT,
+                        help='Run label')
+    parser.add_argument('--optimizer', type=str, default='SGD',
+                        help='Optimizer to use (SGD | Adam)')
+    parser.add_argument('--intermediate_activation_fn', type=str, default='ELU',
+                        help='Activation function to use in intermediate layers (ELU | Tanh | RELU | Softmax)')
+    parser.add_argument('--use_batchnorm', type=bool, default=False,
+                        help='Do we use batch-norm or not?')
     parser.add_argument('--dnn_hidden_units', type=str, default=DNN_HIDDEN_UNITS_DEFAULT,
                         help='Comma separated list of number of units in each hidden layer')
     parser.add_argument('--learning_rate', type=float, default=LEARNING_RATE_DEFAULT,

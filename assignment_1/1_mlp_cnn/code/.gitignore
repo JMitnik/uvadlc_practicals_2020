@@ -10,3 +10,6 @@ batches*
 *.fls
 *.aux
 *.fdb_latexmk
+
+.zip
+*.DS_Store

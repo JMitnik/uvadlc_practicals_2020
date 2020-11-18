@@ -9,7 +9,10 @@
             "type": "python",
             "request": "launch",
             "program": "train_mlp_pytorch.py",
-            "console": "integratedTerminal"
+            "console": "integratedTerminal",
+            "args": [
+                "--learning_rate", "0.02"
+            ]
         }
     ]
 }

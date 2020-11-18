@@ -73,33 +73,264 @@ that $\mu$ and $\sigma$ have on X.
     \frac{\delta Y_{sj}}{\delta X_{ri}} &= 
         % Directly X first
         \frac{\delta Y_{sj}}{\delta \hat{X}_{sj}} * \frac{\delta \hat{X}_{sj}}{\delta X_{ri}}
-            + \frac{\delta Y_{sj}}{\delta \mu_j} * \frac{\delta \mu_j}{\delta X_{ri}}
-            + \frac{\delta Y_{sj}}{\delta \sigma^2_j} * \frac{\delta \sigma^2_j}{\delta X_{ri}}
+            + \frac{\delta Y_{sj}}{\delta \mu_s} * \frac{\delta \mu_s}{\delta X_{ri}}
+            + \frac{\delta Y_{sj}}{\delta \sigma^2_s} * \frac{\delta \sigma^2_s}{\delta X_{ri}}
 \end{align}
 
 This contains quite a number of steps. It would be good to start from the first term we encounter.
 
-{\Large $\frac{\delta Y_{sj}}{\delta X_{ri}}$ }:
+{\Large $\frac{\delta Y_{sj}}{\delta \hat{X}_{sj}}$ }:
 \boxed{\begin{aligned}
-    \frac{\delta L}{\delta \beta}
-    &=> [\frac{\delta L}{\delta \beta}]_i
-    = \frac{\delta L}{\delta \beta}_i
-    = \sum_{sj} \frac{\delta L}{\delta Y_{sj}} * \frac{\delta Y_{sj}}{\delta \beta_i} \\
-    % Now we start
-    &= \sum_{sj} \frac{\delta L}{\delta Y_{sj}} 
-        * \frac{\delta \gamma_j \hat{X}_{sj} + \beta_J}{\delta \beta_i} \\
-    &= \sum_{sj} \frac{\delta L}{\delta Y_{sj}} 
-        * \delta_{ji} \\
-    &= \sum_{s} \frac{\delta L}{\delta Y_{si}} \\
-    &= \textbf{1}^T * \frac{\delta L}{\delta Y} && \text{where $$\textbf{1}$$ is a 1xS vector} \\
+    \frac{\delta Y_{sj}}{\delta \hat{X}_{sj}}
+    &= \frac{\delta \gamma_j * \hat{X}_{sj}}{\delta \hat{X}_{sj}}
+    &= \gamma_j
 \end{aligned}}
+\vspace{1cm}
 
+{\Large $\frac{\delta \hat{X}_{sj}}{\delta {X}_{ri}}$ }:
+\boxed{\begin{aligned}
+    \frac{\delta \hat{X}_{sj}}{\delta {X}_{ri}}
+    &= \frac{\delta}{\delta {X}_{ri}} * ((X_{sj} - \mu_s) * (\sigma_s^2 + \epsilon)^{-0.5}) \\
+    &= (\delta_{sr}\delta{ji} * (\sigma_s^2 + \epsilon)^{-0.5}) \\
+    &= (\frac{\delta_{sr}\delta_{ji}}{(\sigma_s^2 + \epsilon)^{0.5}})
+\end{aligned}}
+\vspace{1cm}
+
+These were the first two terms, and relatively simple. However, from the third term onwards, 
+we deal with a $\mu$ which occurs in $\sigma$ as well. As such, to account for this, we need to 
+calculate the derivative based on the amount of contribution it has in sigma as well. Essentially,
+we calculate the following:
+
+% dY / dMu: entire chain
+\begin{align}
+    \frac{\delta Y_{sj}}{\delta \mu_s} = \frac{\delta Y_{sj}}{\delta \hat{X}_{sj}} 
+        * \frac{\delta \hat{X}_{sj}}{\delta \mu_s}
+        + \frac{\delta Y_{sj}}{\delta \sigma^2_s} * \frac{\delta \sigma^2_s}{\delta \mu_s}
+\end{align}
+
+% dX / dMu
+{\Large $\frac{\delta \hat{X}_{sj}}{\delta \mu_s}$ }:
+\boxed{\begin{aligned}
+    \frac{\delta \hat{X}_{sj}}{\delta \mu_s}
+    &= - \frac{1}{(\sigma_s^2 + \epsilon)^{0.5}}
+\end{aligned}}
+\vspace{1cm}
+
+% dY / d_sigma
+{\Large $\frac{\delta Y_{sj}}{\delta \sigma_s^2}$ }:
+\boxed{\begin{aligned}
+    \frac{\delta Y_{sj}}{\delta \sigma_s^2}
+    &= \frac{\delta Y_{sj}}{\delta \hat{X}_{sj}}
+        * \frac{\delta \hat{X}_{sj}}{\delta \sigma_s^2}
+    = \frac{\delta Y_{sj}}{\delta \hat{X}_{sj}}
+        * \frac{\delta}{\delta \sigma_s^2} (X_{sj} - \mu_s) * (\sigma_s^2 + \epsilon)^{-0.5 } \\
+    &= \frac{\delta Y_{sj}}{\delta \hat{X}_{sj}}
+        * - \frac{1}{2} (X_{sj} - \mu_s) * (\sigma_j^2 + \epsilon)^{-1.5 } \\
+\end{aligned}}
+\vspace{1cm}
+
+% dsigma_j^2 / d_muj
+{\Large $\frac{\delta \sigma_{s}^2}{\delta \mu_s}$ }:
+\boxed{\begin{aligned}
+    \frac{\delta \sigma_{s}^2}{\delta \mu_s}
+    &= \frac{\delta}{\delta \mu_s} \frac{1}{M} \sum_{i=1}^M (X_{si} - \mu_s)^2 \\
+    &= 2 * -1 * \frac{1}{M} \sum_{i=1}^M (X_{si} - \mu_s) \\
+    &= \frac{-2}{M} \sum_{i=1}^M (X_{si} - \mu_s) \\
+\end{aligned}}
+\vspace{1cm}
+
+So when combined, we get the following:
+
+% dsigma_j^2 / d_muj
+{\Large $\frac{\delta Y_{sj}}{\delta \mu_j}$ }:
+\boxed{\begin{aligned}
+    \frac{\delta Y_{sj}}{\delta \mu_j}
+    &= (\gamma_j *  - \frac{1}{(\sigma_s^2 + \epsilon)^{0.5}}) + (\gamma_j * - \frac{1}{2} (X_{sj} - \mu_s) * (\sigma_s^2 + \epsilon)^{-1.5 } * \frac{-2}{M} \sum_{i=1}^M (X_{si} - \mu_s)) \\
+    &= (\gamma_j *  - \frac{1}{(\sigma_s^2 + \epsilon)^{0.5}}) + (\gamma_j * (X_{sj} - \mu_s) * (\sigma_s^2 + \epsilon)^{-1.5 } * (\frac{1}{M} \sum_{i=1}^M (X_{si}) -  \frac{1}{M} \sum_{i=1}^M \mu_s) \\
+    &= (\gamma_j *  - \frac{1}{(\sigma_s^2 + \epsilon)^{0.5}}) + (\gamma_j * (X_{sj} - \mu_s) * (\sigma_s^2 + \epsilon)^{-1.5 } * \mu_s -  \frac{M}{M} \mu_s) \\
+    &= (\gamma_j *  - \frac{1}{(\sigma_s^2 + \epsilon)^{0.5}}) + (\gamma_j * (X_{sj} - \mu_s) * (\sigma_s^2 + \epsilon)^{-1.5 } * 0) \\
+    &= (\gamma_j *  - \frac{1}{(\sigma_s^2 + \epsilon)^{0.5}}) \\
+\end{aligned}}
+\vspace{1cm}
+
+We are almost there, we only need two more terms before we can finish this up.
+
+% dmu_j^2 / d_Xri
+{\Large $\frac{\delta \mu_s}{\delta X_{ri}}$ }:
+\boxed{\begin{aligned}
+    \frac{\delta \mu_s}{\delta X_{ri}}
+    &= \frac{\delta}{\delta X_{ri}} \frac{1}{M} \sum_{k=1}^M X_{sk} \\
+    &= \frac{1}{M} \sum_{k=1}^M \frac{\delta X_{sk}}{\delta X_{ri}} \\
+    &= \frac{1}{M} \sum_{k=1}^M \delta_{sr} \delta_{ki} \\
+    &= \frac{1}{M} \delta_{sr} \\
+    &= \frac{\delta_{sr}}{M}
+\end{aligned}}
+\vspace{1cm}
+
+% dsigma_j^2 / d_Xri
+{\Large $\frac{\delta \sigma_s^2}{\delta X_{ri}}$ }:
+\boxed{\begin{aligned}
+    \frac{\delta \sigma_s^2}{\delta X_{ri}}
+    &= \frac{\delta}{\delta X_{ri}} \frac{1}{M} \sum_{k=1}^M (X_{ki} - \mu_s)^2 \\
+    &= \frac{1}{M} \sum_{k=1}^M 2 * (X_{sk} - \mu_s) * \delta_{sr} \delta_{ki} \\
+    &= \frac{2 \delta_{sr}}{M} \sum_{k=1}^M (X_{sk} - \mu_s)  \delta_{ki} \\
+    &= \frac{2 \delta_{sr}}{M} X_{si} - \mu_s  \\
+\end{aligned}}
+\vspace{1cm}
+
+To give a main overview, these are the main terms that will play a role:
 
 \begin{enumerate}
-    \item $\frac{\delta Y_{sj}}{\delta \hat{X}_{sj}}$
-    \item $\frac{\delta \hat{X}_{sj}}{\delta X_{ri}}$
-    \item $\frac{\delta Y_{sj}}{\delta \mu_j}$
-    \item $\frac{\delta \mu_j}{\delta X_{ri}}$
-    \item $\frac{\delta Y_{sj}}{\delta \sigma^2_j}$
-    \item $\frac{\delta \sigma^2_j}{\delta X_{ri}}$
+    \item $\frac{\delta Y_{sj}}{\delta \hat{X}_{sj}} = \gamma_j$
+    \item $\frac{\delta \hat{X}_{sj}}{\delta X_{ri}} = \frac{\delta_{sr}\delta_{ji}}{(\sigma_s^2 + \epsilon)^{0.5}} $
+    \item $\frac{\delta Y_{sj}}{\delta \sigma^2_s} = \frac{\delta Y_{sj}}{\delta \hat{X}_{sj}}
+            * - \frac{1}{2} (X_{sj} - \mu_s) * (\sigma_s^2 + \epsilon)^{-1.5 }$
+    \item $\frac{\delta Y_{sj}}{\delta \mu_s} = \gamma_j *  - \frac{1}{(\sigma_s^2 + \epsilon)^{0.5}}$
+    \item $\frac{\delta \mu_s}{\delta X_{ri}} = \frac{\delta_{sr}}{M} $
+    \item $\frac{\delta \sigma^2_s}{\delta X_{ri}} = \frac{2 \delta_{sr}}{M} X_{si} - \mu_s$
 \end{enumerate}
+
+To reiterate, the index notation for this formula goes as follows:
+
+\begin{align*}
+    \frac{\delta L}{\delta \textbf{\emph{X}}}
+    &=> \frac{\delta L}{\delta X_{ri}}
+    = \sum_{sj} \frac{\delta L}{\delta Y_{sj}} \frac{\delta Y_{sj}}{\delta X_{ri}} \\
+    % Line 5
+    &= \sum_{sj} 
+    \Bigg[\frac{\delta L}{\delta Y_{sj}} \frac{\delta Y_{sj}}{\delta \hat{X}_{sj}} \frac{\delta \hat{X}_{sj}}{\delta X_{ri}}\Bigg]
+    + \Bigg[\frac{\delta L}{\delta Y_{sj}} \frac{\delta Y_{sj}}{\delta \mu_s}  \frac{\delta \mu_s}{\delta X_{ri}}\Bigg]
+    + \Bigg[\frac{\delta L}{\delta Y_{sj}}  \frac{\delta Y_{sj}}{\delta \sigma^2_s} \frac{\delta \sigma^2_s}{\delta X_{ri}}\Bigg] \\
+    % Line 6
+    &= \sum_{sj} 
+    \Bigg[
+        \frac{\delta L}{\delta Y_{sj}} \gamma_j \frac{\delta_{sr}\delta_{ji}}{(\sigma_s^2 + \epsilon)^{0.5}}
+    \Bigg] \\
+    &+ \Bigg[
+        \frac{\delta L}{\delta Y_{sj}} 
+        \Bigg( \gamma_j *  - \frac{1}{(\sigma_s^2 + \epsilon)^{0.5}} \Bigg)
+        \frac{\delta_{sr}}{M}
+    \Bigg] \\
+    &+ \Bigg[
+        \frac{\delta L}{\delta Y_{sj}} \Bigg(\gamma_j * - \frac{1}{2} (X_{sj} - \mu_s) * (\sigma_s^2 + \epsilon)^{-1.5 } \Bigg)\frac{2 \delta_{sr}}{M} (X_{si} - \mu_s)
+    \Bigg] \\
+    % Line 7
+    &= \sum_{sj} 
+    \Bigg[
+        \frac{\delta L}{\delta Y_{sj}} \gamma_j \frac{\delta_{sr}\delta_{ji}}{(\sigma_s^2 + \epsilon)^{0.5}}
+    \Bigg] \\
+    &- \Bigg[
+        \frac{\delta L}{\delta Y_{sj}} 
+        \Bigg( \gamma_j *  \frac{1}{(\sigma_s^2 + \epsilon)^{0.5}} \Bigg)
+        \frac{\delta_{sr}}{M}
+    \Bigg] \\
+    &- \Bigg[
+        \frac{\delta L}{\delta Y_{sj}} \Bigg(\gamma_j *  \frac{1}{2} (X_{sj} - \mu_s) * (\sigma_s^2 + \epsilon)^{-1.5 } \Bigg)\frac{2 \delta_{sr}}{M} (X_{si} - \mu_s)
+    \Bigg] \\
+    % Line 7
+    &= \sum_{sj} \frac{\delta L}{\delta Y_{sj}} \gamma_j \frac{1}{(\sigma_s^2 + \epsilon)^{0.5}} \delta_{sr} \\
+    &* \Bigg(\Bigg[
+        \delta_{ji}
+    \Bigg] 
+    - \Bigg[
+        \frac{1}{M}
+    \Bigg]
+    - \Bigg[
+        \frac{1}{2} (X_{sj} - \mu_s) * (\sigma_s^2 + \epsilon)^{-1 } * \frac{2}{M} (X_{si} - \mu_s)
+    \Bigg] \Bigg)  \\
+    % Line 7
+    &= \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j \frac{1}{(\sigma_r^2 + \epsilon)^{0.5}} \\
+    &* \Bigg(\Bigg[\delta_{ji}\Bigg] 
+    - \Bigg[\frac{1}{M} \Bigg]
+    - \Bigg[
+        \frac{1}{2} (X_{rj} - \mu_r) * (\sigma_r^2 + \epsilon)^{-1 } * \frac{2}{M} (X_{ri} - \mu_r)
+    \Bigg] \Bigg) \\
+    % Line 7
+    &= \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j \frac{1}{(\sigma_r^2 + \epsilon)^{0.5}} \\
+    &* \Bigg(\Bigg[\delta_{ji}\Bigg] 
+    - \Bigg[\frac{1}{M} \Bigg]
+    - \Bigg[
+        (X_{rj} - \mu_r) * (\sigma_r^2 + \epsilon)^{-1 } * \frac{1}{M} (X_{ri} - \mu_r)
+    \Bigg] \Bigg) \\
+    % Line 7
+    &= \frac{1}{(\sigma_r^2 + \epsilon)^{0.5}} \\
+    &* \Bigg(\Bigg[\
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j * \delta_{ji}
+    \Bigg] 
+    - \Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j \frac{1}{M} 
+    \Bigg] \\
+    &- \Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j *
+        (X_{rj} - \mu_r) * (\sigma_r^2 + \epsilon)^{-0.5 } *(\sigma_r^2 + \epsilon)^{-0.5 } * \frac{1}{M} (X_{ri} - \mu_r)
+    \Bigg] \Bigg) \\
+    % Line 7
+    &= \frac{1}{(\sigma_r^2 + \epsilon)^{0.5}} \\
+    &* \Bigg(\Bigg[\
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j * \delta_{ji}
+    \Bigg] 
+    - \Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j \frac{1}{M} 
+    \Bigg] \\
+    &- \Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j *
+        (X_{rj} - \mu_r) * (\sigma_r^2 + \epsilon)^{-0.5 } *(\sigma_r^2 + \epsilon)^{-0.5 } * \frac{1}{M} (X_{ri} - \mu_r)
+    \Bigg] \Bigg) \\
+    % Line 7
+    \pagebreak
+\end{align*}
+
+\begin{align*}
+    &= \frac{1}{(\sigma_r^2 + \epsilon)^{0.5}} \\
+    &* \Bigg(\Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j * \delta_{ji}
+    \Bigg] 
+    - \Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j \frac{1}{M} 
+    \Bigg] \\
+    &- \Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j *
+        \hat{X}_{rj} *(\sigma_r^2 + \epsilon)^{-0.5 } * \frac{1}{M} (X_{ri} - \mu_r)
+    \Bigg] \Bigg) \\
+    \\
+    &= \frac{1}{(\sigma_r^2 + \epsilon)^{0.5}} \\
+    &* \Bigg(\Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j * \delta_{ji}
+    \Bigg] 
+    - \Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j \frac{1}{M} 
+    \Bigg] \\
+    &- \Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j *
+        \hat{X}_{rj} * \frac{1}{M} \hat{X_{ri}}
+    \Bigg] \Bigg) \\
+    \\
+    &= \frac{1}{M} * \frac{1}{(\sigma_r^2 + \epsilon)^{0.5}} \\
+    &* \Bigg(\Bigg[
+        M * \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j * \delta_{ji}
+    \Bigg] 
+    - \Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j 
+    \Bigg] \\
+    &- \Bigg[
+        \sum_{j} \frac{\delta L}{\delta Y_{rj}} \gamma_j *
+        \hat{X}_{rj} \hat{X_{ri}}
+    \Bigg] \Bigg) \\
+    \\
+\end{align*}
+
+\subsection{Batch norm vs Layer norm}
+Batch normalization ensures that our features are scaled to have 0 mean and standard deviation of 1, 
+which creates an implicit boundary for the loss of these features, and essentially smoothes out the
+surface. 
+
+One of the problems of batch-norm, is how the mean and sigma are not invariant on the batch size itself.
+This means that the definition of your batch-size can influence the perforamnce of batch-normalization
+immensely. We are required to enforce a higher batch-size to prevent noise from coming in. And also,
+we need to keep into account for each iteration of an RNN the differnet means and standard deviations,
+which can become storage expensive.
+
+Layer norm normalizes based on features rather than batch size. That essentially that each example is
+normalized different from other examples (no shared mean and standard deviation). However, this assumes
+a major flaw: not all neurons are always equally important, which is something the layer normalization implicitly
+uses as assumption. This can work to its detriment in for instance ConvNets, even though RNNs have better performance

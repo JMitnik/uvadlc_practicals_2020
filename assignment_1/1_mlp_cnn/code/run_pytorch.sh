@@ -1,0 +1,1 @@
+python train_mlp_pytorch.py --run_label 'hidden=64_128--maxsteps=10000' --max_steps=10000 --dnn_hidden_units 64,128

@@ -140,12 +140,17 @@ def train():
             'loss': loss.item()
         })
 
+
+        if iteration % 50 == 0:
+            print(f"Loss on iteration {iteration} is {loss.item()}")
+
         if iteration % FLAGS.eval_freq == 0: #type: ignore
             X_test = test_dataset.images
             X_test = X_test.reshape(X_test.shape[0], -1)
             y_test = test_dataset.labels
             pred = mlp.forward(X_test)
             acc = accuracy(pred, y_test)
+            print(f"Average test accuracy on {iteration} is {acc}")
 
             test_accs.append(({
                 'iteration': iteration,
