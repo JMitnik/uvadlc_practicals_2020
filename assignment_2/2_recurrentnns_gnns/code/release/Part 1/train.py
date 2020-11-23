@@ -23,6 +23,7 @@ import time
 from datetime import datetime
 
 import torch
+import
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -44,6 +45,7 @@ import numpy as np
 
 
 def train(config):
+    model: nn.Module
     np.random.seed(0)
     torch.manual_seed(0)
 

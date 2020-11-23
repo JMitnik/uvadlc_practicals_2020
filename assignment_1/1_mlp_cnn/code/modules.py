@@ -99,6 +99,7 @@ class SoftMaxModule(object):
         x_max = x.max(1)
         x_max_tricked = x - np.tile(x_max, (x.shape[1], 1)).T
         x_totals = np.exp(x_max_tricked).sum(1) # type: ignore
+        
         x_probs = np.exp(x_max_tricked) / np.tile(x_totals, (x.shape[1], 1)).T # type: ignore
         
         out = x_probs
