@@ -20,6 +20,7 @@ class LSTM(nn.Module):
 
         super(LSTM, self).__init__()
 
+        self.device = device
         self.seq_length = seq_length
         self.input_dim = input_dim
         self.hidden_dim = hidden_dim
@@ -28,32 +29,33 @@ class LSTM(nn.Module):
 
         self.embedding = nn.Embedding(num_classes, input_dim)
 
-        self.Wgx = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, input_dim)) * math.sqrt(2 / input_dim))
-        self.Wgh = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, hidden_dim)) * math.sqrt(2 / hidden_dim))
-        self.bg = nn.Parameter(torch.zeros(hidden_dim))
+        self.Wgx = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, input_dim)).to(device) * math.sqrt(2 / input_dim)).to(device)
+        self.Wgh = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, hidden_dim)).to(device) * math.sqrt(2 / hidden_dim)).to(device)
+        self.bg = nn.Parameter(torch.zeros(hidden_dim)).to(device)
 
-        self.Wix = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, input_dim)) * math.sqrt(2 / input_dim))
-        self.Wih = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, hidden_dim)) * math.sqrt(2 / hidden_dim))
-        self.bi = nn.Parameter(torch.zeros(hidden_dim))
+        self.Wix = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, input_dim)).to(device) * math.sqrt(2 / input_dim)).to(device)
+        self.Wih = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, hidden_dim)).to(device) * math.sqrt(2 / hidden_dim)).to(device)
+        self.bi = nn.Parameter(torch.zeros(hidden_dim)).to(device)
 
-        self.Wfx = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, input_dim)) * math.sqrt(2 / input_dim))
-        self.Wfh = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, hidden_dim))* math.sqrt(2 / hidden_dim))
-        self.bf = nn.Parameter(torch.zeros(hidden_dim))
+        self.Wfx = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, input_dim)).to(device) * math.sqrt(2 / input_dim)).to(device)
+        self.Wfh = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, hidden_dim)).to(device)* math.sqrt(2 / hidden_dim)).to(device)
+        self.bf = nn.Parameter(torch.zeros(hidden_dim)).to(device)
 
-        self.Wox = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, input_dim)) * math.sqrt(2 / input_dim))
-        self.Woh = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, hidden_dim)) * math.sqrt(2 / hidden_dim))
-        self.bo = nn.Parameter(torch.zeros(hidden_dim))
+        self.Wox = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, input_dim)).to(device) * math.sqrt(2 / input_dim)).to(device)
+        self.Woh = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, hidden_dim)).to(device) * math.sqrt(2 / hidden_dim)).to(device)
+        self.bo = nn.Parameter(torch.zeros(hidden_dim)).to(device)
 
-        self.Wph = nn.Parameter(torch.normal(0.0, 1.0, size=(num_classes, hidden_dim)) * math.sqrt(2 / hidden_dim))
-        self.bp = nn.Parameter(torch.zeros(num_classes))
+        self.Wph = nn.Parameter(torch.normal(0.0, 1.0, size=(num_classes, hidden_dim)).to(device) * math.sqrt(2 / hidden_dim)).to(device)
+        self.bp = nn.Parameter(torch.zeros(num_classes)).to(device)
         
     def forward(self, x):
-        x = x.long() # Convert into appropriate format for input
-        h_t = torch.zeros(self.hidden_dim)
-        c_t = torch.zeros(self.hidden_dim)
+        x = x.to(self.device)
+        x = x.long().to(self.device) # Convert into appropriate format for input
+        h_t = torch.zeros(self.hidden_dim).to(self.device)
+        c_t = torch.zeros(self.hidden_dim).to(self.device)
 
         for seq_idx in range(self.seq_length):
-            x_t = self.embedding(x[:, seq_idx, :])
+            x_t = self.embedding(x[:, seq_idx, :]).to(self.device)
             g_t = torch.tanh(x_t @ self.Wgx.T + h_t @ self.Wgh.T + self.bg)
             i_t = torch.sigmoid(x_t @ self.Wix.T + h_t @ self.Wih.T + self.bi)
             f_t = torch.sigmoid(x_t @ self.Wfx.T + h_t @ self.Wfh.T + self.bf)
