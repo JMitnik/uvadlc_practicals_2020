@@ -36,12 +36,29 @@ from lstm import LSTM
 from gru import GRU
 from peep_lstm import peepLSTM
 
+import os
 import numpy as np
+import pandas as pd
 
 # You may want to look into tensorboardX for logging
 # from tensorboardX import SummaryWriter
 
 ###############################################################################
+
+def ensure_path(path_to_file):
+    os.makedirs(os.path.dirname(path_to_file), exist_ok=True)
+
+def save_run_results(losses, accs, label=None):
+    if label:
+        log_folder = f'results/{label}'
+    else:
+        current_datetime = datetime.now().strftime("%d_%m_%Y-%H_%M_%S")
+        log_folder = f'results/{current_datetime}'
+
+    ensure_path(f'{log_folder}/test.csv')
+
+    pd.DataFrame(losses).to_csv(f'{log_folder}/losses.csv')
+    pd.DataFrame(accs).to_csv(f'{log_folder}/accs.csv')
 
 
 def train(config):
@@ -84,8 +101,6 @@ def train(config):
 
         config.input_length = config.input_length*4+2-1
 
-
-
     # Setup the model that we are going to use
     if config.model_type == 'LSTM':
         print("Initializing LSTM model ...")
@@ -123,6 +138,9 @@ def train(config):
     loss_function = nn.NLLLoss()
     optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
 
+    losses = []
+    accs = []
+
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
         # Only for time measurement of step through network
@@ -150,13 +168,27 @@ def train(config):
         #######################################################################
 
         optimizer.step()
-
         predictions = torch.argmax(log_probs, dim=1)
         correct = (predictions == batch_targets).sum().item()
         accuracy = correct / log_probs.size(0)
 
-        # print(predictions[0, ...], batch_targets[0, ...])
+        if step % 10 == 0:
+            losses.append({
+                'step': step,
+                'loss': loss.item(),
+                'seq_length': config.input_length,
+                'seed': config.seed,
+                'model': model._get_name()
+            })
 
+            accs.append({
+                'step': step,
+                'acc': accuracy,
+                'seq_length': config.input_length,
+                'seed': config.seed,
+                'model': model._get_name()
+            })
+        
         # Just for time measurement
         t2 = time.time()
         examples_per_second = config.batch_size/float(t2-t1)
@@ -170,13 +202,18 @@ def train(config):
                     config.train_steps, config.batch_size, examples_per_second,
                     accuracy, loss
                     ))
+            
+        # Early stopping
+        if len(losses) > 1 and (abs(losses[-1]['loss'] - losses[-2]['loss'])) < 0.0001:
+            break
 
         # Check if training is finished
         if step == config.train_steps:
             # If you receive a PyTorch data-loader error, check this bug report
             # https://github.com/pytorch/pytorch/pull/9655
             break
-
+    
+    save_run_results(losses, accs)
     print('Done training.')
     ###########################################################################
     ###########################################################################
@@ -222,6 +259,10 @@ if __name__ == "__main__":
                         help='Log device placement for debugging')
     parser.add_argument('--summary_path', type=str, default="./summaries/",
                         help='Output path for summaries')
+    parser.add_argument('--seed', type=int, default=0,
+                        help='Seed used for running the experiments')
+    parser.add_argument('--label', type=str, default='',
+                        help='Label used for running the experiments')
 
     config = parser.parse_args()
 

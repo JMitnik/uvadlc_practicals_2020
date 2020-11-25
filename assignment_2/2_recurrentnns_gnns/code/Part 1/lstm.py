@@ -28,7 +28,6 @@ class LSTM(nn.Module):
 
         self.embedding = nn.Embedding(num_classes, input_dim)
 
-        # TODO: Should it be normal?
         self.Wgx = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, input_dim)) * math.sqrt(2 / input_dim))
         self.Wgh = nn.Parameter(torch.normal(0.0, 1.0, size=(hidden_dim, hidden_dim)) * math.sqrt(2 / hidden_dim))
         self.bg = nn.Parameter(torch.zeros(hidden_dim))
