@@ -20,13 +20,6 @@ class peepLSTM(nn.Module):
 
         super(peepLSTM, self).__init__()
 
-        ########################
-        # PUT YOUR CODE HERE  #
-        #######################
-        raise NotImplementedError
-        ########################
-        # END OF YOUR CODE    #
-        #######################
 
     def forward(self, x):
         

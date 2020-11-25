@@ -1,0 +1,25 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "train.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--model_type", "LSTM",
+                "--dataset", "bipalindrome",
+                "--device", "cpu",
+                "--learning_rate", "0.0001",
+                "--batch_size", "256",
+                "--num_hidden", "256",
+                "--input_dim", "1",
+                "--input_length", "6",
+            ]
+        }
+    ]
+}

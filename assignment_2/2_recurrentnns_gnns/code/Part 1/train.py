@@ -23,7 +23,7 @@ import time
 from datetime import datetime
 
 import torch
-import
+import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader
 
@@ -77,7 +77,7 @@ def train(config):
     elif config.dataset == 'bipalindrome':
         print('Load binary palindrome dataset ...')
         # Initialize the dataset and data loader
-        config.num_classes = config.input_length
+        config.num_classes = 3
         dataset = datasets.BinaryPalindromeDataset(config.input_length)
         data_loader = DataLoader(dataset, config.batch_size, num_workers=1,
                                  drop_last=True)
@@ -120,7 +120,7 @@ def train(config):
         ).to(device)
 
     # Setup the loss and optimizer
-    loss_function = torch.nn.NLLLoss()
+    loss_function = nn.NLLLoss()
     optimizer = optim.Adam(model.parameters(), lr=config.learning_rate)
 
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
