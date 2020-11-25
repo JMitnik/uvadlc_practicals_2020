@@ -63,8 +63,8 @@ def save_run_results(losses, accs, label=None):
 
 def train(config):
     model: nn.Module
-    np.random.seed(0)
-    torch.manual_seed(0)
+    np.random.seed(config.seed)
+    torch.manual_seed(config.seed)
 
 
     # Initialize the device which to run the model on
@@ -204,7 +204,7 @@ def train(config):
                     ))
             
         # Early stopping
-        if len(losses) > 1 and (abs(losses[-1]['loss'] - losses[-2]['loss'])) < 0.0001:
+        if config.enable_es and len(losses) > 1 and (abs(losses[-1]['loss'] - losses[-2]['loss'])) < 0.0001:
             break
 
         # Check if training is finished
@@ -249,7 +249,8 @@ if __name__ == "__main__":
     parser.add_argument('--train_steps', type=int, default=3000,
                         help='Number of training steps')
     parser.add_argument('--max_norm', type=float, default=10.0)
-
+    parser.add_argument('--enable_es', type=bool, default=False,
+                        help='Whether we should enable early stopping or not')
     # Misc params
     parser.add_argument('--device', type=str, default="cuda:0",
                         help="Training device 'cpu' or 'cuda:0'")
