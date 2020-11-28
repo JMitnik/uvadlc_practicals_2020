@@ -11,7 +11,8 @@
             "program": "train.py",
             "console": "integratedTerminal",
             "args": [
-                "--txt_file", "assets/book_NL_tolstoy_anna_karenina.txt"
+                "--txt_file", "assets/book_NL_tolstoy_anna_karenina.txt",
+                "--print_every", "50"
             ]
         }
     ]

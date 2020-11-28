@@ -18,7 +18,6 @@ from __future__ import division
 from __future__ import print_function
 
 import os
-from predictor import CharacterPredictor
 import time
 from datetime import datetime
 import argparse
@@ -29,7 +28,6 @@ import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
 import torch.nn.functional as F
-import pytorch_lightning as pl
 
 from dataset import TextDataset
 from model import TextGenerationModel
@@ -53,7 +51,7 @@ def train(config):
         config.lstm_num_hidden,
         config.lstm_num_layers,
         device=config.device
-    ) 
+    ).to(config.device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
