@@ -19,6 +19,7 @@ from __future__ import print_function
 from importlib.resources import path
 
 import os
+from platform import python_branch
 import time
 from datetime import datetime
 import argparse
@@ -34,12 +35,11 @@ from dataset import TextDataset
 from model import TextGenerationModel
 
 from torch.utils.tensorboard import SummaryWriter
+
+import utils
+from utils import ResultsWriter
+
 ###############################################################################
-
-def ensure_path(path_to_file):
-    os.makedirs(os.path.dirname(path_to_file), exist_ok=True)
-
-    return path_to_file
 
 
 def train(config):
@@ -62,10 +62,10 @@ def train(config):
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
-
-    ensure_path(f'{config.summary_path}/results.csv')
-    tb_writer = SummaryWriter(
-        log_dir=config.summary_path,
+    res_writer = utils.ResultsWriter(
+        config.summary_path,
+        f'seql-{config.seq_length}_lstmhidden-{config.lstm_num_hidden}_lstmlay-{config.lstm_num_layers}',
+        config
     )
 
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
@@ -97,10 +97,10 @@ def train(config):
         examples_per_second = config.batch_size/float(t2-t1)
 
         if (step + 1) % config.print_every == 0:
-            tb_writer.add_scalar('loss', loss, step)
-            tb_writer.add_scalar('acc', accuracy, step)
-            tb_writer.add_scalar('examples_per_sec', examples_per_second, step)            
-            tb_writer.add_scalar('time', t2 - t1, step)
+            res_writer.add_accuracy(accuracy, step)
+            res_writer.add_loss(loss, step)
+            if len(res_writer.losses) == 0 or loss < res_writer.losses[-1]:
+                res_writer.save_model(model)
 
             print("[{}] Train Step {:04d}/{:04d}, Batch Size = {}, \
                     Examples/Sec = {:.2f}, "
@@ -120,6 +120,7 @@ def train(config):
             # https://github.com/pytorch/pytorch/pull/9655
             break
 
+    res_writer.stop()
     print('Done training.')
 
 
