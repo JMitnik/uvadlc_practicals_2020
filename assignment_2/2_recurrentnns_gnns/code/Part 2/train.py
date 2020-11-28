@@ -18,6 +18,7 @@ from __future__ import division
 from __future__ import print_function
 
 import os
+from predictor import CharacterPredictor
 import time
 from datetime import datetime
 import argparse
@@ -27,6 +28,8 @@ import numpy as np
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
+import torch.nn.functional as F
+import pytorch_lightning as pl
 
 from dataset import TextDataset
 from model import TextGenerationModel
@@ -35,39 +38,54 @@ from model import TextGenerationModel
 
 
 def train(config):
-
     # Initialize the device which to run the model on
     device = torch.device(config.device)
 
     # Initialize the dataset and data loader (note the +1)
-    dataset = TextDataset(...)  # fixme
+    dataset = TextDataset(config.txt_file, config.seq_length)  # fixme
     data_loader = DataLoader(dataset, config.batch_size)
 
     # Initialize the model that we are going to use
-    model = TextGenerationModel(...)  # FIXME
+    model = TextGenerationModel(
+        config.batch_size,
+        config.seq_length,
+        dataset.vocab_size,
+        config.lstm_num_hidden,
+        config.lstm_num_layers,
+        device=config.device
+    ) 
 
-    # Setup the loss and optimizer
-    criterion = None  # FIXME
-    optimizer = None  # FIXME
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
 
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
         # Only for time measurement of step through network
         t1 = time.time()
 
-        #######################################################
-        # Add more code here ...
-        #######################################################
+        X = batch_inputs
+        y = batch_targets
+        X = torch.stack(X, 1).to(config.device)
+        y = torch.stack(y, 1).to(config.device)
+        preds = model(X)
 
-        loss = np.inf   # fixme
-        accuracy = 0.0  # fixme
+        # Flatten preds and y
+        preds = preds.reshape(-1, preds.shape[2])
+        y = y.reshape(-1)
+
+        loss = F.cross_entropy(preds, y)
+        loss.backward()
+        optimizer.step()
+
+
+        optimizer.zero_grad()
+        accuracy = (preds.argmax(1) == y).sum().item() / len(y)
+
 
         # Just for time measurement
         t2 = time.time()
         examples_per_second = config.batch_size/float(t2-t1)
 
         if (step + 1) % config.print_every == 0:
-
             print("[{}] Train Step {:04d}/{:04d}, Batch Size = {}, \
                     Examples/Sec = {:.2f}, "
                   "Accuracy = {:.2f}, Loss = {:.3f}".format(

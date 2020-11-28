@@ -29,6 +29,7 @@ class TextDataset(data.Dataset):
         self._seq_length = seq_length
         self._data = open(filename, 'r').read()
         self._chars = sorted(list(set(self._data)))
+        self._chars.sort() # Is this necessary?
         self._data_size, self._vocab_size = len(self._data), len(self._chars)
         print("Initialize dataset with {} characters, {} unique.".format(
             self._data_size, self._vocab_size))
