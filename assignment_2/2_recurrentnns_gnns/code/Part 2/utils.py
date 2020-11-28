@@ -40,7 +40,7 @@ class ResultsWriter:
         self.accs = []
     
     def _init_yaml(self, path_to_yaml, params):
-        with open(path_to_yaml, 'wr') as f:
+        with open(path_to_yaml, 'w') as f:
             yaml.dump([params], f)
     
     def add_loss(self, loss, iter):

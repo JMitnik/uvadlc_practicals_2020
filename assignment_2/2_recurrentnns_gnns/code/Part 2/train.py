@@ -65,7 +65,11 @@ def train(config):
     res_writer = utils.ResultsWriter(
         config.summary_path,
         f'seql-{config.seq_length}_lstmhidden-{config.lstm_num_hidden}_lstmlay-{config.lstm_num_layers}',
-        config
+        {
+            'seq_length': config.seq_length,
+            'lstm_hidden': config.lstm_num_hidden,
+            'lstm_num_layers': config.lstm_num_layers
+        }
     )
 
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
