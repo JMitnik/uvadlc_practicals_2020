@@ -16,6 +16,7 @@
 from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
+from importlib.resources import path
 
 import os
 import time
@@ -32,7 +33,13 @@ import torch.nn.functional as F
 from dataset import TextDataset
 from model import TextGenerationModel
 
+from torch.utils.tensorboard import SummaryWriter
 ###############################################################################
+
+def ensure_path(path_to_file):
+    os.makedirs(os.path.dirname(path_to_file), exist_ok=True)
+
+    return path_to_file
 
 
 def train(config):
@@ -54,6 +61,12 @@ def train(config):
     ).to(config.device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+
+
+    ensure_path(f'{config.summary_path}/results.csv')
+    tb_writer = SummaryWriter(
+        log_dir=config.summary_path,
+    )
 
     for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
@@ -84,6 +97,11 @@ def train(config):
         examples_per_second = config.batch_size/float(t2-t1)
 
         if (step + 1) % config.print_every == 0:
+            tb_writer.add_scalar('loss', loss, step)
+            tb_writer.add_scalar('acc', accuracy, step)
+            tb_writer.add_scalar('examples_per_sec', examples_per_second, step)            
+            tb_writer.add_scalar('time', t2 - t1, step)
+
             print("[{}] Train Step {:04d}/{:04d}, Batch Size = {}, \
                     Examples/Sec = {:.2f}, "
                   "Accuracy = {:.2f}, Loss = {:.3f}".format(
