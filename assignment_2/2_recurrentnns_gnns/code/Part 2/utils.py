@@ -73,7 +73,7 @@ class ResultsWriter:
     def stop(self):
         self.sw_writer.close()
 
-def greedy_sample(logits):
-    probs = torch.softmax(logits, 0)
+def sample(logits, temperature = 1):
+    probs = torch.softmax(logits * temperature)
 
     return probs.argmax(idx=0).item()

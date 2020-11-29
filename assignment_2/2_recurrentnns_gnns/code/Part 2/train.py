@@ -123,7 +123,7 @@ def train(config):
                     h_current = None
                     X = torch.tensor(current_sent[-1]).unsqueeze(0)
                     pred, h_current = model(X, h_current).squeeze(0)
-                    sampled_token = utils.greedy_sample(pred)
+                    sampled_token = utils.sample(pred, config.temperature)
                     current_sent.append(sampled_token)
                 
             decoded_sent = dataset.convert_to_string(current_sent)
@@ -191,6 +191,7 @@ if __name__ == "__main__":
     # If needed/wanted, feel free to add more arguments
 
     parser.add_argument('--nr_to_sample', type=int, default=30, help='Number of samples to generate')
+    parser.add_argument('--temperature', type=int, default=1, help='Temperature to add to the sampling')
 
     config = parser.parse_args()
 
