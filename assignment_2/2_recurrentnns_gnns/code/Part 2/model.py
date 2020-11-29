@@ -43,8 +43,12 @@ class TextGenerationModel(nn.Module):
             batch_first=True
         ).to(device)
 
-    def forward(self, x):
+    def forward(self, x, h_current = None):
         x = self.embedding(x)
-        out, _ = self.lstm(x)
 
-        return out
+        if h_current:
+            out, h = self.lstm(x, h_current)
+        else:
+            out, h = self.lstm(x)
+
+        return out, h

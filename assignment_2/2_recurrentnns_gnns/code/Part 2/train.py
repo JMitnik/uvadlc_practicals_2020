@@ -81,7 +81,7 @@ def train(config):
         y = batch_targets
         X = torch.stack(X, 1).to(config.device)
         y = torch.stack(y, 1).to(config.device)
-        preds = model(X)
+        preds, _ = model(X)
 
         # Flatten preds and y
         preds = preds.reshape(-1, preds.shape[2])
@@ -116,13 +116,13 @@ def train(config):
 
         if (step + 1) % config.sample_every == 0:
             start_word, start_idx = dataset.sample_random_chars(1)
-            nr_to_generate = 30
             current_sent = start_idx
             
             with torch.no_grad():
-                for nr in range(nr_to_generate - 1):
-                    X = torch.tensor(current_sent).unsqueeze(0)
-                    pred = model(X).squeeze(0)
+                for nr in range(config.nr_to_sample - 1):
+                    h_current = None
+                    X = torch.tensor(current_sent[-1]).unsqueeze(0)
+                    pred, h_current = model(X, h_current).squeeze(0)
                     sampled_token = utils.greedy_sample(pred)
                     current_sent.append(sampled_token)
                 
@@ -189,6 +189,8 @@ if __name__ == "__main__":
                         help="Device to run the model on.")
 
     # If needed/wanted, feel free to add more arguments
+
+    parser.add_argument('--nr_to_sample', type=int, default=30, help='Number of samples to generate')
 
     config = parser.parse_args()
 
