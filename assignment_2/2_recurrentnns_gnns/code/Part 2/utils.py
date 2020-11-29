@@ -36,8 +36,15 @@ class ResultsWriter:
             log_dir=self.path_to_results,
         )
 
+        self.path_to_text_file = f'{self.path_to_results}/sampled_text.txt'
+        self._init_sampled_text(self.path_to_text_file)
+
         self.losses = []
         self.accs = []
+
+    def _init_sampled_text(self, path_to_text_file):
+        with open (path_to_text_file, 'w') as file:
+            file.write("Start of sampled-text\n\n")
     
     def _init_yaml(self, path_to_yaml, params):
         with open(path_to_yaml, 'w') as f:
@@ -51,8 +58,22 @@ class ResultsWriter:
         self.accs.append(acc)
         self.sw_writer.add_scalar('Acc', acc, iter)
 
+    def add_sampled_text(self, start, text, step):
+        with open (self.path_to_text_file, 'a') as file:
+            file.write(
+                f"On step {step} we generate the following, given the start '{start}' :\n"
+                f"=====\n"
+                f"{text}"
+                f"\n \n"
+            )
+
     def save_model(self, model: nn.Module):
         torch.save(model.state_dict(), f'{self.path_to_results}/{model.__get_name()}.pt')
 
     def stop(self):
         self.sw_writer.close()
+
+def greedy_sample(logits):
+    probs = torch.softmax(logits, 0)
+
+    return probs.argmax(idx=0).item()

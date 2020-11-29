@@ -115,8 +115,21 @@ def train(config):
                     ))
 
         if (step + 1) % config.sample_every == 0:
-            # Generate some sentences by sampling from the model
-            pass
+            start_word, start_idx = dataset.sample_random_chars(1)
+            nr_to_generate = 30
+            current_sent = start_idx
+            
+            with torch.no_grad():
+                for nr in range(nr_to_generate - 1):
+                    X = torch.tensor(current_sent).unsqueeze(0)
+                    pred = model(X).squeeze(0)
+                    sampled_token = utils.greedy_sample(pred)
+                    current_sent.append(sampled_token)
+                
+            decoded_sent = dataset.convert_to_string(current_sent)
+
+            # Add character
+            res_writer.add_sampled_text(start_word[0], decoded_sent, step)
 
         if step == config.train_steps:
             # If you receive a PyTorch data-loader error,

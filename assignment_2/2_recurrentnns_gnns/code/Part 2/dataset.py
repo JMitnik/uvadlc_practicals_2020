@@ -20,7 +20,7 @@ from __future__ import print_function
 import os
 import numpy as np
 import torch.utils.data as data
-
+import random
 
 class TextDataset(data.Dataset):
 
@@ -48,6 +48,11 @@ class TextDataset(data.Dataset):
 
     def __len__(self):
         return self._data_size
+
+    def sample_random_chars(self, nr_chars):
+        chars = random.sample(self._chars, nr_chars)
+        char_idxs = [self._char_to_ix[i] for i in chars]
+        return chars, char_idxs
 
     @property
     def vocab_size(self):
