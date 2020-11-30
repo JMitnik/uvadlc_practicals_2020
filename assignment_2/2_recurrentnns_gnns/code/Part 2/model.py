@@ -39,9 +39,11 @@ class TextGenerationModel(nn.Module):
         self.lstm = nn.LSTM(
             input_size=lstm_num_hidden, 
             hidden_size=lstm_num_hidden, 
-            num_layers=lstm_num_layers, 
+            num_layers=lstm_num_layers,
             batch_first=True
         ).to(device)
+
+        self.hid_2out = nn.Linear(lstm_num_hidden, vocabulary_size)
 
     def forward(self, x, h_current = None):
         x = self.embedding(x)
@@ -50,5 +52,7 @@ class TextGenerationModel(nn.Module):
             out, h = self.lstm(x, h_current)
         else:
             out, h = self.lstm(x)
+        
+        out = self.hid_2out(out)
 
         return out, h

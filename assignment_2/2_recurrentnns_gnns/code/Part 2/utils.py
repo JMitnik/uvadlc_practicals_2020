@@ -74,6 +74,7 @@ class ResultsWriter:
         self.sw_writer.close()
 
 def sample(logits, temperature = 1):
-    probs = torch.softmax(logits * temperature)
+    logits = logits.detach()
+    probs: torch.Tensor = torch.softmax(logits * temperature, 0)
 
-    return probs.argmax(idx=0).item()
+    return torch.multinomial(probs, 1).item()

@@ -119,10 +119,11 @@ def train(config):
             current_sent = start_idx
             
             with torch.no_grad():
+                h_current = None
                 for nr in range(config.nr_to_sample - 1):
-                    h_current = None
-                    X = torch.tensor(current_sent[-1]).unsqueeze(0)
-                    pred, h_current = model(X, h_current).squeeze(0)
+                    X = torch.tensor(current_sent[-1]).to(config.device).reshape(1, 1)
+                    pred, h_current = model(X, h_current)
+                    pred = pred.squeeze()
                     sampled_token = utils.sample(pred, config.temperature)
                     current_sent.append(sampled_token)
                 
