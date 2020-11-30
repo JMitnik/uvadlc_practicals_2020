@@ -55,8 +55,6 @@ class TextGenerationModel(nn.Module):
         else:
             out, h = self.lstm(x)
         
-        out = torch.relu(out)
-
         out = self.hid_2out(out)
 
         return out, h

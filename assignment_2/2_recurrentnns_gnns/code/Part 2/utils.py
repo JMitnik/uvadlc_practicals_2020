@@ -1,6 +1,13 @@
 from logging import root
 from datetime import datetime
 import torch.nn as nn
+
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.rcParams['lines.linewidth'] = 2.0
+import seaborn as sns
+sns.reset_orig()
+
 import torch
 import os
 from torch.utils.tensorboard import SummaryWriter
@@ -80,8 +87,26 @@ class ResultsWriter:
         df = pd.DataFrame({ 'loss': self.losses, 'accs': self.accs })
         df.to_csv(f'{self.path_to_results}/results.csv')
 
+        create_loss_acc_plots(
+            self.losses,
+            self.accs,
+            self.exp_name,
+            f"{self.path_to_results}plots-"
+        )
+
 def sample(logits, temperature = 1):
     logits = logits.detach()
     probs: torch.Tensor = torch.softmax(logits * temperature, 0)
 
     return torch.argmax(probs, 0).item()
+
+def create_loss_acc_plots(losses, accs, title, base_filename):
+    plt.plot(losses)
+    plt.title(f"Loss run:{title}")
+    plt.savefig(f"{base_filename}-loss")
+    plt.cla()
+    
+    plt.plot(accs)
+    plt.title(f"Accs run:{title}")
+    plt.savefig(f"{base_filename}-accs")
+    plt.cla()

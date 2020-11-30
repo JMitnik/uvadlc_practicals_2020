@@ -78,9 +78,10 @@ def train(config):
         }
     )
     
-    globaL_step = 0
+    global_step = 0
+    step = 0
 
-    while globaL_step < config.train_steps:
+    while global_step < config.train_steps:
         for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
             # Only for time measurement of step through network
@@ -120,7 +121,7 @@ def train(config):
                 print("[{}] Train Step {:04d}/{:04d}, Batch Size = {}, \
                         Examples/Sec = {:.2f}, "
                     "Accuracy = {:.2f}, Loss = {:.3f}".format(
-                        datetime.now().strftime("%Y-%m-%d %H:%M"), step,
+                        datetime.now().strftime("%Y-%m-%d %H:%M"), step + global_step,
                         config.train_steps, config.batch_size, examples_per_second,
                         accuracy, loss
                         ))
@@ -149,8 +150,8 @@ def train(config):
                 # https://github.com/pytorch/pytorch/pull/9655
                 break
         
-        global_step = globaL_step + step
-        print(f"Global step is: {globaL_step}")
+        global_step = global_step + step
+        print(f"Global step is: {global_step}")
         
     res_writer.summarize_training()
     res_writer.stop()
