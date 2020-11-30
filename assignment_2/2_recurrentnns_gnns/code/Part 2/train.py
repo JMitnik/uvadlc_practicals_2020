@@ -77,74 +77,80 @@ def train(config):
             'lstm_num_layers': config.lstm_num_layers
         }
     )
+    
+    globaL_step = 0
 
-    for step, (batch_inputs, batch_targets) in enumerate(data_loader):
+    while globaL_step < config.train_steps:
+        for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
-        # Only for time measurement of step through network
-        t1 = time.time()
+            # Only for time measurement of step through network
+            t1 = time.time()
 
-        X = batch_inputs
-        y = batch_targets
-        X = torch.stack(X, 1).to(config.device)
-        y = torch.stack(y, 1).to(config.device)
-        preds, _ = model(X)
+            X = batch_inputs
+            y = batch_targets
+            X = torch.stack(X, 1).to(config.device)
+            y = torch.stack(y, 1).to(config.device)
+            preds, _ = model(X)
 
-        # Flatten preds and y
-        preds = preds.reshape(-1, preds.shape[2])
-        y = y.reshape(-1)
+            # Flatten preds and y
+            preds = preds.reshape(-1, preds.shape[2])
+            y = y.reshape(-1)
 
-        loss = F.cross_entropy(preds, y)
-        loss.backward()
-        optimizer.step()
-
-
-        optimizer.zero_grad()
-        accuracy = (preds.argmax(1) == y).sum().item() / len(y)
+            loss = F.cross_entropy(preds, y)
+            loss.backward()
+            optimizer.step()
 
 
-        # Just for time measurement
-        t2 = time.time()
-        examples_per_second = config.batch_size/float(t2-t1)
+            optimizer.zero_grad()
+            accuracy = (preds.argmax(1) == y).sum().item() / len(y)
 
-        if (step + 1) % config.save_every == 0:
-            if len(res_writer.losses) == 0 or loss < res_writer.losses[-1]:
-                res_writer.save_model(model)
 
-        if (step + 1) % config.print_every == 0:
-            res_writer.add_accuracy(accuracy, step)
-            res_writer.add_loss(loss.item(), step)
+            # Just for time measurement
+            t2 = time.time()
+            examples_per_second = config.batch_size/float(t2-t1)
 
-            print("[{}] Train Step {:04d}/{:04d}, Batch Size = {}, \
-                    Examples/Sec = {:.2f}, "
-                  "Accuracy = {:.2f}, Loss = {:.3f}".format(
-                    datetime.now().strftime("%Y-%m-%d %H:%M"), step,
-                    config.train_steps, config.batch_size, examples_per_second,
-                    accuracy, loss
-                    ))
+            if (step + 1) % config.save_every == 0:
+                if len(res_writer.losses) == 0 or loss < res_writer.losses[-1]:
+                    res_writer.save_model(model)
 
-        if (step + 1) % config.sample_every == 0:
-            start_word, start_idx = dataset.sample_random_chars(1)
-            current_sent = start_idx
-            
-            with torch.no_grad():
-                h_current = None
-                for nr in range(config.nr_to_sample - 1):
-                    X = torch.tensor(current_sent[-1]).to(config.device).reshape(1, 1)
-                    pred, h_current = model(X, h_current)
-                    pred = pred.squeeze()
-                    sampled_token = utils.sample(pred, config.temperature)
-                    current_sent.append(sampled_token)
+            if (step + 1) % config.print_every == 0:
+                res_writer.add_accuracy(accuracy, global_step)
+                res_writer.add_loss(loss.item(), global_step)
+
+                print("[{}] Train Step {:04d}/{:04d}, Batch Size = {}, \
+                        Examples/Sec = {:.2f}, "
+                    "Accuracy = {:.2f}, Loss = {:.3f}".format(
+                        datetime.now().strftime("%Y-%m-%d %H:%M"), step,
+                        config.train_steps, config.batch_size, examples_per_second,
+                        accuracy, loss
+                        ))
+
+            if (step + 1) % config.sample_every == 0:
+                start_word, start_idx = dataset.sample_random_chars(1)
+                current_sent = start_idx
                 
-            decoded_sent = dataset.convert_to_string(current_sent)
+                with torch.no_grad():
+                    h_current = None
+                    for nr in range(config.nr_to_sample - 1):
+                        X = torch.tensor(current_sent[-1]).to(config.device).reshape(1, 1)
+                        pred, h_current = model(X, h_current)
+                        pred = pred.squeeze()
+                        sampled_token = utils.sample(pred, config.temperature)
+                        current_sent.append(sampled_token)
+                    
+                decoded_sent = dataset.convert_to_string(current_sent)
 
-            # Add character
-            res_writer.add_sampled_text(start_word[0], decoded_sent, step)
+                # Add character
+                res_writer.add_sampled_text(start_word[0], decoded_sent, step)
 
-        if step == config.train_steps:
-            # If you receive a PyTorch data-loader error,
-            # check this bug report:
-            # https://github.com/pytorch/pytorch/pull/9655
-            break
+            if step == config.train_steps:
+                # If you receive a PyTorch data-loader error,
+                # check this bug report:
+                # https://github.com/pytorch/pytorch/pull/9655
+                break
+        
+        global_step = globaL_step + step
+        print(f"Global step is: {globaL_step}")
         
     res_writer.summarize_training()
     res_writer.stop()
