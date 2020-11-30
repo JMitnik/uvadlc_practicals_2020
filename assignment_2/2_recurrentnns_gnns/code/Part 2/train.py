@@ -36,6 +36,7 @@ from model import TextGenerationModel
 
 from torch.utils.tensorboard import SummaryWriter
 
+from datetime import datetime
 import utils
 from utils import ResultsWriter
 
@@ -64,8 +65,10 @@ def train(config):
 
     res_writer = utils.ResultsWriter(
         config.summary_path,
-        f'seql-{config.seq_length}_lstmhidden-{config.lstm_num_hidden}_lstmlay-{config.lstm_num_layers}',
+        f'{config.label}--{datetime.now().strftime("%m_%d_%Y_%H_%M_%S")}',
         {
+            'label': config.label,
+            'txt_file': config.txt_file,
             'seq_length': config.seq_length,
             'lstm_hidden': config.lstm_num_hidden,
             'lstm_num_layers': config.lstm_num_layers
@@ -190,7 +193,7 @@ if __name__ == "__main__":
                         help="Device to run the model on.")
 
     # If needed/wanted, feel free to add more arguments
-
+    parser.add_argument('--label', type=str, default='', help='Readable label as prefix')
     parser.add_argument('--nr_to_sample', type=int, default=30, help='Number of samples to generate')
     parser.add_argument('--temperature', type=int, default=1, help='Temperature to add to the sampling')
 

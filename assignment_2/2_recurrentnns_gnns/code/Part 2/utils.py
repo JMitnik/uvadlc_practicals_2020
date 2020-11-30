@@ -77,4 +77,4 @@ def sample(logits, temperature = 1):
     logits = logits.detach()
     probs: torch.Tensor = torch.softmax(logits * temperature, 0)
 
-    return torch.multinomial(probs, 1).item()
+    return torch.argmax(probs, 0).item()
