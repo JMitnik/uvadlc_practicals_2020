@@ -11,7 +11,10 @@
             "program": "train.py",
             "console": "integratedTerminal",
             "args": [
-                "--txt_file", "assets/book_NL_tolstoy_anna_karenina.txt",
+                "--txt_file", "assets/book_EN_grimms_fairy_tails.txt",
+                "--batch_size",  "256",
+                "--lstm_num_hidden" ,"512",
+                "--learning_rate", "0.02",
                 "--print_every", "50"
             ]
         }
