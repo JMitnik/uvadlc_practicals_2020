@@ -70,26 +70,15 @@ class ResultsWriter:
             )
 
     def save_model(self, model: nn.Module):
-        torch.save(model.state_dict(), f'{self.path_to_results}/{model.__get_name()}.pt')
+        torch.save(model.state_dict(), f'{self.path_to_results}/{model._get_name()}.pt')
 
     def stop(self):
         self.sw_writer.close()
 
     def summarize_training(self):
         # Save final results
-        df = pd.Dataframe({ 'loss': self.losses, 'accs': self.accs })
+        df = pd.DataFrame({ 'loss': self.losses, 'accs': self.accs })
         df.to_csv(f'{self.path_to_results}/results.csv')
-
-        results = {
-            'final_results': {
-                'total_training_steps': len(self.losses),
-                'best_loss': np.min(self.losses),
-                'best_acc': np.max(self.accs)
-            }
-        }
-        with open (f'{self.path_to_results}/experiment.yaml', 'a') as file:
-            yaml_file = yaml.load(file)
-            yaml.dump(results, yaml_file)
 
 def sample(logits, temperature = 1):
     logits = logits.detach()

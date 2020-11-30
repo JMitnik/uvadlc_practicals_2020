@@ -17,3 +17,19 @@ python train.py --label democracy_numhidden256 --lstm_num_hidden 256 --txt_file 
 python train.py --label democracy_seqlength30 --seq_length 30 --txt_file assets/book_EN_democracy_in_the_US.txt
 python train.py --label democracy_seqlength60 --seq_length 60 --txt_file assets/book_EN_democracy_in_the_US.txt
 python train.py --label democracy_seqlength80 --seq_length 80 --txt_file assets/book_EN_democracy_in_the_US.txt
+
+# Vary sentence length generation
+python train.py --label democracy_gen30 --nr_to_sample 30 --txt_file assets/book_EN_democracy_in_the_US.txt
+python train.py --label democracy_gen50 --nr_to_sample 50 --txt_file assets/book_EN_democracy_in_the_US.txt
+python train.py --label democracy_gen70 --nr_to_sample 70 --txt_file assets/book_EN_democracy_in_the_US.txt
+python train.py --label darwin_reis_gen30 --nr_to_sample 30 --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
+python train.py --label darwin_reis_gen50 --nr_to_sample 50 --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
+python train.py --label darwin_reis_gen70 --nr_to_sample 70 --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
+
+# Vary temperature
+python train.py --label democracy_gentemp1 --temperature 1 --txt_file assets/book_EN_democracy_in_the_US.txt
+python train.py --label democracy_gentemp0.5 --temperature 0.5 --txt_file assets/book_EN_democracy_in_the_US.txt
+python train.py --label democracy_gentemp2 --temperature 2 --txt_file assets/book_EN_democracy_in_the_US.txt
+python train.py --label darwin_reis_gentemp1 --temperature 1 --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
+python train.py --label darwin_reis_gentemp0.5 --temperature 0.5 --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
+python train.py --label darwin_reis_gentemp2 --temperature 2 --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt

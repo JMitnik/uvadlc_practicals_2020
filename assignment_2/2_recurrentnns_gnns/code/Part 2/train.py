@@ -112,7 +112,7 @@ def train(config):
 
         if (step + 1) % config.print_every == 0:
             res_writer.add_accuracy(accuracy, step)
-            res_writer.add_loss(loss, step)
+            res_writer.add_loss(loss.item(), step)
 
             print("[{}] Train Step {:04d}/{:04d}, Batch Size = {}, \
                     Examples/Sec = {:.2f}, "
