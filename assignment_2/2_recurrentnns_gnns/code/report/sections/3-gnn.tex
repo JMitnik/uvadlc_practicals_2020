@@ -1,1 +1,64 @@
-test
+\subsection{GCN Forward Layer}
+\subsubsection*{3.1.a}
+The structure of the graph can be found represented in $\hat{A}$, 
+which is composed of the Diagonals $\tilde{D}$ (meaning how many neighbours a node has) 
+and $\tilde{A}$, representing the edges of the nodes (the adjacency matrix). 
+This multiplication will instruct which neighbouring nodes will receive 
+the message formed by the $W^{(l)}$-projection of $H^{(l)}$ from the prior layer, 
+and how much of it (this is the normalization step). This message as such is shared among neighbours,
+and propagated through the layers.
+
+\subsubsection*{3.1.b}
+One major problem, is when nodes have the same neighbours: because the input for all nodes
+are shared equally across neighbours, including a node's own input, the output will lose
+the distinguishability of a node's meaning. An alternative to this, would be to use \emph{attention}
+to let a model learn the weighed averages of neighbours rather than treating them equally.
+
+\subsubsection*{3.2.a}
+$$ \tilde{A} = 
+    \left( \begin{matrix} 0 & 1 & 0 & 0 & 1 & 1 \\ 1 & 0 & 0 & 1 & 0 & 0 \\ 0 & 0 & 0 & 1 & 0 & 0 \\ 0 & 1 & 1 & 0 & 0 & 1 \\ 1 & 0 & 0 & 0 & 0 & 0 \\ 1 & 0 & 0 & 1 & 0 & 0 \end{matrix} \right)
+    + \left( \begin{matrix} 1 & 0 & 0 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 & 0 & 0 \\ 0 & 0 & 1 & 0 & 0 & 0 \\ 0 & 0 & 0 & 1 & 0 & 0 \\ 0 & 0 & 0 & 0 & 1 & 0 \\ 0 & 0 & 0 & 0 & 0 & 1 \end{matrix} \right)
+    =
+    \left( \begin{matrix} 1 & 1 & 0 & 0 & 1 & 1 \\ 1 & 1 & 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 1 & 0 & 0 \\ 0 & 1 & 1 & 1 & 0 & 1 \\ 1 & 0 & 0 & 0 & 1 & 0 \\ 1 & 0 & 0 & 1 & 0 & 1 \end{matrix} \right) $$
+
+\subsubsection*{3.2.b}
+The number of updates this would take is 4. The first update would go from C to D, then this
+would be passed both to F and B, then on the third update they both pass some part of C to A, which
+on the fourth update will be passed to E.
+
+\subsection{Graph Attention Networks}
+What we need to add to the existing formula, is obviously some coefficient to express the attention
+relationship between i and j. This is introduces an MLP \emph{a} which maps the concatenation of i and
+j to a relationship, a LeakyRelu which ensures that attention remains dependent on the query, and a
+softmax to scale the attention to become a probability distribution. 
+
+$$
+    h_i^{(l+1)} = \sigma \Big(
+        \sum_{j \in N(i)} \frac{exp(LeakyRelu(a * [Wh_i || Wh_j]))}{\sum_{k \in N_i} exp(LeakyRelu(a * [Wh_i || Wh_k]))} * W^{(l)} h_j^{(l)}
+    \Big )
+$$
+
+\subsection{Applications of GNNs}
+A first example could be for instance improving a recommender system with knowledge graph information,
+as detailed in \cite{guo2020survey}. For instance, when recommending movies to a user, a movies can utilize
+as connections such as other movies a leading actor played in, or perhaps movies a friend enjoyed as well. 
+This is in general an edge-level task.
+A node-level use-case could be enhancing embeddings via concatenation, such as is done 
+in \cite{DBLP:journals/corr/abs-1909-08402}. When classifying books (nodes), one could classify these
+with BERT embeddings, but also use related structural information such as author.
+
+\subsection{Comparing and Combining GNNs and RNNs}
+
+\subsubsection*{3.4.a}
+Any spatial information that is not 1-dimensional likely benefits more form GNNs than RNNs. In 
+its traditional form, RNNs do not consider more than a linear dimension. Therefore, images will work 
+better with a GNN that accounts for its entire neighbourhood. However, GNNs are less robust when
+it comes to particular order, such as an important sequence of text: RNNs traverse these sequences
+with an emphasis on order, therefor being able to parse translation between languages better.
+
+\subsubsection*{3.4.b}
+In \cite{fernandes2020structured}, a summarization task is discussed, where a bit of text is processed
+using traditional RNN encoder style. This is then enriched by inserting these token representation into
+a gated GNN, which borrows gating techniques as proposed by the LSTMs. The GNNs can then utilize 
+supervised relationships of these tokens/embeddings, and pool the resulting node-transformations
+into a decodable summary.

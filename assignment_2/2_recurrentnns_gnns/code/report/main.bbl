@@ -1,0 +1,19 @@
+\begin{thebibliography}{1}
+
+\bibitem{fernandes2020structured}
+Patrick Fernandes, Miltiadis Allamanis, and Marc Brockschmidt.
+\newblock Structured neural summarization, 2020.
+
+\bibitem{guo2020survey}
+Qingyu Guo, Fuzhen Zhuang, Chuan Qin, Hengshu Zhu, Xing Xie, Hui Xiong, and
+  Qing He.
+\newblock A survey on knowledge graph-based recommender systems, 2020.
+
+\bibitem{DBLP:journals/corr/abs-1909-08402}
+Malte Ostendorff, Peter Bourgonje, Maria Berger, Juli{\'{a}}n~Moreno Schneider,
+  Georg Rehm, and Bela Gipp.
+\newblock Enriching {BERT} with knowledge graph embeddings for document
+  classification.
+\newblock {\em CoRR}, abs/1909.08402, 2019.
+
+\end{thebibliography}
