@@ -65,7 +65,8 @@ def train(config):
 
     res_writer = utils.ResultsWriter(
         config.summary_path,
-        f'{config.label}--nr_layers-{config.lstm_num_layers}--lr-{config.learning_rate}--nr_hidden-{config.lstm_num_hidden}--seqs-{config.seq_length}--{datetime.now().strftime("%m_%d_%Y_%H_%M_%S")}',
+        config.label,
+        f'nr_layers-{config.lstm_num_layers}--lr-{config.learning_rate}--nr_hidden-{config.lstm_num_hidden}--seqs-{config.seq_length}--{datetime.now().strftime("%m_%d_%Y_%H_%M_%S")}',
         {
             'label': config.label,
             'nr_to_sample': config.nr_to_sample,

@@ -23,11 +23,13 @@ def ensure_path(path_to_file):
 class ResultsWriter:
     def __init__(
         self, 
-        root_path_to_results, 
+        root_path_to_results,
+        base_label, 
         exp_name,
         exp_params
     ) -> None:
         self.start_time = datetime.now().strftime("%d_%m_%Y-%H_%M_%S")
+        self.base_label = base_label
         self.exp_name = exp_name
         self.root_path_to_results = root_path_to_results
         
@@ -90,8 +92,8 @@ class ResultsWriter:
         create_loss_acc_plots(
             self.losses,
             self.accs,
-            self.exp_name,
-            f"{self.path_to_results}plots-"
+            self.base_label,
+            f"{self.path_to_results}/training-plots"
         )
 
 def sample(logits, temperature = 1):
@@ -101,12 +103,12 @@ def sample(logits, temperature = 1):
     return torch.argmax(probs, 0).item()
 
 def create_loss_acc_plots(losses, accs, title, base_filename):
-    plt.plot(losses)
+    plt.plot(losses, color='r')
     plt.title(f"Loss run:{title}")
-    plt.savefig(f"{base_filename}-loss")
+    plt.savefig(f"{base_filename}-loss.png")
     plt.cla()
     
-    plt.plot(accs)
+    plt.plot(accs, color='g')
     plt.title(f"Accs run:{title}")
-    plt.savefig(f"{base_filename}-accs")
+    plt.savefig(f"{base_filename}-accs.png")
     plt.cla()
