@@ -61,16 +61,17 @@ def train(config):
         device=config.device
     ).to(config.device)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
 
     res_writer = utils.ResultsWriter(
         config.summary_path,
-        f'{config.label}--{datetime.now().strftime("%m_%d_%Y_%H_%M_%S")}',
+        f'{config.label}--nr_layers-{config.lstm_num_layers}--lr-{config.learning_rate}--nr_hidden-{config.lstm_num_hidden}--seqs-{config.seq_length}--{datetime.now().strftime("%m_%d_%Y_%H_%M_%S")}',
         {
             'label': config.label,
             'nr_to_sample': config.nr_to_sample,
             'temperature': config.temperature,
             'txt_file': config.txt_file,
+            'lr': config.learning_rate,
             'seq_length': config.seq_length,
             'lstm_hidden': config.lstm_num_hidden,
             'lstm_num_layers': config.lstm_num_layers
@@ -105,11 +106,13 @@ def train(config):
         t2 = time.time()
         examples_per_second = config.batch_size/float(t2-t1)
 
+        if (step + 1) % config.save_every == 0:
+            if len(res_writer.losses) == 0 or loss < res_writer.losses[-1]:
+                res_writer.save_model(model)
+
         if (step + 1) % config.print_every == 0:
             res_writer.add_accuracy(accuracy, step)
             res_writer.add_loss(loss, step)
-            if len(res_writer.losses) == 0 or loss < res_writer.losses[-1]:
-                res_writer.save_model(model)
 
             print("[{}] Train Step {:04d}/{:04d}, Batch Size = {}, \
                     Examples/Sec = {:.2f}, "
@@ -192,6 +195,8 @@ if __name__ == "__main__":
                         help='How often to print training progress')
     parser.add_argument('--sample_every', type=int, default=100,
                         help='How often to sample from the model')
+    parser.add_argument('--save_every', type=int, default=1000,
+                        help='How often to save model')
     parser.add_argument('--device', type=str, default=("cpu" if not torch.cuda.is_available() else "cuda"),
                         help="Device to run the model on.")
 

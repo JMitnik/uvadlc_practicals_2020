@@ -6,6 +6,7 @@ import os
 from torch.utils.tensorboard import SummaryWriter
 import yaml
 import numpy as np
+import pandas as pd
 
 def ensure_path(path_to_file):
     os.makedirs(os.path.dirname(path_to_file), exist_ok=True)
@@ -75,6 +76,10 @@ class ResultsWriter:
         self.sw_writer.close()
 
     def summarize_training(self):
+        # Save final results
+        df = pd.Dataframe({ 'loss': self.losses, 'accs': self.accs })
+        df.to_csv(f'{self.path_to_results}/results.csv')
+
         results = {
             'final_results': {
                 'total_training_steps': len(self.losses),
