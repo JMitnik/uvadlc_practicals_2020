@@ -68,6 +68,8 @@ def train(config):
         f'{config.label}--{datetime.now().strftime("%m_%d_%Y_%H_%M_%S")}',
         {
             'label': config.label,
+            'nr_to_sample': config.nr_to_sample,
+            'temperature': config.temperature,
             'txt_file': config.txt_file,
             'seq_length': config.seq_length,
             'lstm_hidden': config.lstm_num_hidden,
@@ -196,7 +198,7 @@ if __name__ == "__main__":
     # If needed/wanted, feel free to add more arguments
     parser.add_argument('--label', type=str, default='', help='Readable label as prefix')
     parser.add_argument('--nr_to_sample', type=int, default=30, help='Number of samples to generate')
-    parser.add_argument('--temperature', type=int, default=1, help='Temperature to add to the sampling')
+    parser.add_argument('--temperature', type=float, default=1, help='Temperature to add to the sampling')
 
     config = parser.parse_args()
 

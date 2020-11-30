@@ -82,9 +82,9 @@ class ResultsWriter:
                 'best_acc': np.max(self.accs)
             }
         }
-        with open (f'{self.path_to_results}/experiment.yaml', a) as file:
-            yaml_file = yaml.load(yaml_file)
-            yaml.dump(results)
+        with open (f'{self.path_to_results}/experiment.yaml', 'a') as file:
+            yaml_file = yaml.load(file)
+            yaml.dump(results, yaml_file)
 
 def sample(logits, temperature = 1):
     logits = logits.detach()
