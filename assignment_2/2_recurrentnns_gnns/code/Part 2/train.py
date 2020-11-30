@@ -140,7 +140,8 @@ def train(config):
             # check this bug report:
             # https://github.com/pytorch/pytorch/pull/9655
             break
-
+        
+    res_writer.summarize_training()
     res_writer.stop()
     print('Done training.')
 

@@ -5,6 +5,7 @@ import torch
 import os
 from torch.utils.tensorboard import SummaryWriter
 import yaml
+import numpy as np
 
 def ensure_path(path_to_file):
     os.makedirs(os.path.dirname(path_to_file), exist_ok=True)
@@ -72,6 +73,18 @@ class ResultsWriter:
 
     def stop(self):
         self.sw_writer.close()
+
+    def summarize_training(self):
+        results = {
+            'final_results': {
+                'total_training_steps': len(self.losses),
+                'best_loss': np.min(self.losses),
+                'best_acc': np.max(self.accs)
+            }
+        }
+        with open (f'{self.path_to_results}/experiment.yaml', a) as file:
+            yaml_file = yaml.load(yaml_file)
+            yaml.dump(results)
 
 def sample(logits, temperature = 1):
     logits = logits.detach()
