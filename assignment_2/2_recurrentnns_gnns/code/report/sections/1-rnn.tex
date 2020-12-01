@@ -77,3 +77,38 @@ Gates, go as follow:
 The number of parameters are $4 * \Big((N_{hidden} * N_{hidden}) + (N_{hidden} * N_{input}) 
 + N_{hidden}\Big) + (N_{hidden} * N_{output}) $.
 
+\subsubsection*{1.3}
+During training, the model was trained a number of times. To be more specific, the model was trained on three seeds (42, 1337 and 1994), with varying
+sequence lengths eventually becoming 41 and 81 ((10, 20) * 4 + 2 -1). Both the training loss and training accuracy can be seen in the figure below, where
+the standard deviation for every 10th step defines the "error-boundary", across seeds. Two noticeable differences occur. Whereas
+sequences of 41 lenght eventually reach a proper convergence (across all seeds), sequences twice as long
+still have a very high variance in both loss and and accuracy. However, this might be a simple shift of increased
+variance that sequences of length 41 had (from timestep 500(=50*10) to 2000(=200*10)); if the model were to continue
+to train, the model might reach similar convergence.
+
+\begin{figure}[h]%
+    \centering
+    \subfloat[\centering LSTM accuracy averaged]{{\includegraphics[width=6.5cm]{images/LSTM-plot-accs.png} }}%
+    \qquad
+    \subfloat[\centering LSTM loss averaged]{{\includegraphics[width=6.5cm]{images/LSTM-plot-loss.png} }}%
+    \caption{LSTM Performance over time: note, these are estimates stored every 10 steps of (3000), thus showing 300 recordings}%
+    \label{fig:defaults}%
+\end{figure}
+
+\subsubsection*{1.4}
+Now, with PeepLSTM, the results across sequence lengths look more similar to one another. The mean performance for 
+both the longer sequence and shorter sequence seem to be much closer now, hinting at the idea that the peepholes
+may make models more robust in general for longer sequences (even if the variance is still relatively high). What's
+more, the signal averages seem more noisy, indicating slightly less stable predictions in general (notice both
+losses and accuracies seem to be contain more discord). The true power of the peephole LSTM is mostly visible
+when looking at the general increase in performance speed for lenght 81: where the vanilla seemed to plateau for
+a while (likely due to the output gate being closed), Peephole LSTMS bypass some of the problems by provind this extra signal.
+
+\begin{figure}[h]%
+    \centering
+    \subfloat[\centering PeepLSTM accuracy averaged]{{\includegraphics[width=6.5cm]{images/peepLSTM-plot-accs.png} }}%
+    \qquad
+    \subfloat[\centering PeepLSTM loss averaged]{{\includegraphics[width=6.5cm]{images/peepLSTM-plot-loss.png} }}%
+    \caption{PeepLSTM Performance over time: note, these are estimates stored every 10 steps of (3000), thus showing 300 recordings}%
+    \label{fig:defaults}%
+\end{figure}
