@@ -1,3 +1,8 @@
+# # Vary temperature
+python train.py --label democracy_gentemp0.5 --temperature 0.5 --save_on_fractions_of_epoch=0.1 --use_temperature True --txt_file assets/book_EN_democracy_in_the_US.txt
+python train.py --label democracy_gentemp2 --temperature 2 --save_on_fractions_of_epoch=0.1 --use_temperature True --txt_file assets/book_EN_democracy_in_the_US.txt
+python train.py --label darwin_reis_gentemp0.5 --temperature 0.5 --save_on_fractions_of_epoch=0.1 --use_temperature True --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
+python train.py --label darwin_reis_gentemp2 --temperature 2 --save_on_fractions_of_epoch=0.1 --use_temperature True --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
 
 # # Vary sentence length generation
 python train.py --label democracy_gen20  --save_on_fractions_of_epoch 0.01 --nr_to_sample 20 --txt_file assets/book_EN_democracy_in_the_US.txt
@@ -5,15 +10,6 @@ python train.py --label democracy_gen50  --save_on_fractions_of_epoch 0.01 --nr_
 python train.py --label democracy_gen70  --save_on_fractions_of_epoch 0.01 --nr_to_sample 70 --txt_file assets/book_EN_democracy_in_the_US.txt
 python train.py --label darwin_reis_gen50  --save_on_fractions_of_epoch 0.01 --nr_to_sample 50 --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
 python train.py --label darwin_reis_gen70 --save_on_fractions_of_epoch 0.01  --nr_to_sample 70 --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
-
-
-# # Vary temperature
-python train.py --label democracy_gentemp1 --temperature 1 --save_on_fractions_of_epoch 0.01 --use_temperature True --txt_file assets/book_EN_democracy_in_the_US.txt
-python train.py --label democracy_gentemp0.5 --temperature 0.5 --save_on_fractions_of_epoch=0.1 --use_temperature True --txt_file assets/book_EN_democracy_in_the_US.txt
-python train.py --label democracy_gentemp2 --temperature 2 --save_on_fractions_of_epoch=0.1 --use_temperature True --txt_file assets/book_EN_democracy_in_the_US.txt
-python train.py --label darwin_reis_gentemp1 --temperature 1 --save_on_fractions_of_epoch=0.1 --use_temperature True P1 --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
-python train.py --label darwin_reis_gentemp0.5 --temperature 0.5 --save_on_fractions_of_epoch=0.1 --use_temperature True --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
-python train.py --label darwin_reis_gentemp2 --temperature 2 --save_on_fractions_of_epoch=0.1 --use_temperature True --txt_file assets/book_NL_darwin_reis_om_de_wereld.txt
 
 # # Vary seq length
 python train.py --label democracy_seqlength60 --seq_length 60 --txt_file assets/book_EN_democracy_in_the_US.txt
