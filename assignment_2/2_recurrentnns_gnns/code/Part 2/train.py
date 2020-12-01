@@ -61,7 +61,7 @@ def train(config):
         device=config.device
     ).to(config.device)
 
-    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config.learning_rate, )
 
     res_writer = utils.ResultsWriter(
         config.summary_path,
@@ -82,7 +82,9 @@ def train(config):
     global_step = 0
     step = 0
 
-    while global_step < config.train_steps:
+    use_fractions = config.save_on_fractions_of_epoch > 0
+
+    for epoch in range(config.nr_epochs):
         for step, (batch_inputs, batch_targets) in enumerate(data_loader):
 
             # Only for time measurement of step through network
@@ -100,12 +102,16 @@ def train(config):
 
             loss = F.cross_entropy(preds, y)
             loss.backward()
+
+
+            torch.nn.utils.clip_grad_norm_(model.parameters(),
+                                       max_norm=config.max_norm)
+
             optimizer.step()
 
 
             optimizer.zero_grad()
             accuracy = (preds.argmax(1) == y).sum().item() / len(y)
-
 
             # Just for time measurement
             t2 = time.time()
@@ -126,8 +132,8 @@ def train(config):
                         config.train_steps, config.batch_size, examples_per_second,
                         accuracy, loss
                         ))
-
-            if (step + 1) % config.sample_every == 0:
+            
+            if (use_fractions and (step % int(config.save_on_fractions_of_epoch * len(dataset))) == 0) or (not use_fractions and (step + 1) % config.sample_every == 0):
                 start_word, start_idx = dataset.sample_random_chars(1)
                 current_sent = start_idx
                 
@@ -137,7 +143,7 @@ def train(config):
                         X = torch.tensor(current_sent[-1]).to(config.device).reshape(1, 1)
                         pred, h_current = model(X, h_current)
                         pred = pred.squeeze()
-                        sampled_token = utils.sample(pred, config.temperature)
+                        sampled_token = utils.sample(pred, config.temperature, config.use_temperature)
                         current_sent.append(sampled_token)
                     
                 decoded_sent = dataset.convert_to_string(current_sent)
@@ -212,6 +218,10 @@ if __name__ == "__main__":
     parser.add_argument('--label', type=str, default='', help='Readable label as prefix')
     parser.add_argument('--nr_to_sample', type=int, default=30, help='Number of samples to generate')
     parser.add_argument('--temperature', type=float, default=1, help='Temperature to add to the sampling')
+    parser.add_argument('--use_temperature', type=bool, default=False, help='Whether to use temperature in the sampling')
+    parser.add_argument('--nr_epochs', type=int, default=5, help='Decide on nr epochs over training data-set to train.')
+    parser.add_argument('--save_on_fractions_of_epoch', type=float, default=0.0, help='Save on fractions of epoch instead.')
+
 
     config = parser.parse_args()
 

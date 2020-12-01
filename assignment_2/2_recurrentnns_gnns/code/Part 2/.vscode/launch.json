@@ -15,7 +15,9 @@
                 "--batch_size",  "256",
                 "--lstm_num_hidden" ,"512",
                 "--learning_rate", "0.02",
-                "--print_every", "50"
+                "--print_every", "50",
+                "--use_temperature", "True",
+                "--save_on_fractions_of_epoch", "0.01"
             ]
         }
     ]

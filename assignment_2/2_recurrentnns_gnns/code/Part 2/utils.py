@@ -96,10 +96,15 @@ class ResultsWriter:
             f"{self.path_to_results}/training-plots"
         )
 
-def sample(logits, temperature = 1):
+def sample(logits, temperature = 1, use_temperature = 1):
     logits = logits.detach()
     probs: torch.Tensor = torch.softmax(logits * temperature, 0)
 
+    # If temperature is 1, we will do 
+    if use_temperature:
+        return torch.multinomial(probs, 1).item()
+
+    # Else, for now we return greedy
     return torch.argmax(probs, 0).item()
 
 def create_loss_acc_plots(losses, accs, title, base_filename):
